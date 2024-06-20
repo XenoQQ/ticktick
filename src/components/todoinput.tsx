@@ -100,7 +100,7 @@ const TodoInput: React.FC = () => {
         setContent("");
         setTargetDate("");
         console.log(todosFromRedux);
-    };
+    }; 
 
     return (
         <>
