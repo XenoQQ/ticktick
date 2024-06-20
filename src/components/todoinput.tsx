@@ -39,6 +39,8 @@ const InputForm = styled.input`
     justify-content: left;
 `;
 
+const InputDateContainer = styled.div``;
+
 const InputDate = styled.input``;
 
 const InputButton = styled.button`
@@ -52,7 +54,9 @@ const InputButton = styled.button`
     border: none;
     border-radius: 5px;
 
-    transition: 1s, flex-basis 0.1s;
+    transition:
+        1s,
+        flex-basis 0.1s;
     align-items: center;
     justify-content: center;
 
@@ -107,11 +111,14 @@ const TodoInput: React.FC = () => {
                     placeholder="Вводить задачу сюда"
                     onChange={(e) => setContent(e.target.value)}
                 />
-                <InputDate
-                    type="date"
-                    value={targetDate}
-                    onChange={(e) => setTargetDate(e.target.value)}
-                />
+                <InputDateContainer>
+                    <InputDate
+                        type="date"
+                        value={targetDate}
+                        onChange={(e) => setTargetDate(e.target.value)}
+                    />
+                </InputDateContainer>
+
                 <InputButton onClick={() => handleAddTodo()} />
             </InputContainer>
         </>
