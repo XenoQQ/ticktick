@@ -6,9 +6,9 @@ export interface TodoItemProps {
         priority: "none" | "low" | "medium" | "high";
         doneStatus: boolean;
         tags: string[];
-        timeOfCreation: Date;
-        timeOfCompletion?: Date;
-        targetDate: Date;
+        timeOfCreation: string;
+        timeOfCompletion?: string | undefined;
+        targetDate: string | undefined;
         type: string;
         childrenKeys: string[];
     };

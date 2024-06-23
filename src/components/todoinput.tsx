@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TodoItemProps } from "../controls/types.ts";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store.ts";
+import Datepicker from "./datepicker.tsx";
 
 const InputContainer = styled.div`
     display: flex;
@@ -39,10 +40,6 @@ const InputForm = styled.input`
     justify-content: left;
 `;
 
-const InputDateContainer = styled.div``;
-
-const InputDate = styled.input``;
-
 const InputButton = styled.button`
     display: flex;
     width: 50px;
@@ -74,7 +71,7 @@ const InputButton = styled.button`
 
 const TodoInput: React.FC = () => {
     const [content, setContent] = React.useState("");
-    const [targetDate, setTargetDate] = React.useState("");
+    const [targetDate, setTargetDate] = React.useState<Date | undefined>(undefined);
     const dispatch = useDispatch();
 
     const todosFromRedux = useSelector((state: RootState) => state.todos);
@@ -88,9 +85,9 @@ const TodoInput: React.FC = () => {
                 priority: "medium" as "none" | "low" | "medium" | "high",
                 doneStatus: false,
                 tags: [],
-                timeOfCreation: new Date(),
+                timeOfCreation: new Date().toString(),
                 timeOfCompletion: undefined,
-                targetDate: new Date(targetDate),
+                targetDate: targetDate?.toString(),
                 type: "parent",
                 childrenKeys: [],
             },
@@ -98,9 +95,9 @@ const TodoInput: React.FC = () => {
 
         dispatch(addTodo(newTodo));
         setContent("");
-        setTargetDate("");
+        setTargetDate(undefined);
         console.log(todosFromRedux);
-    }; 
+    };
 
     return (
         <>
@@ -111,13 +108,7 @@ const TodoInput: React.FC = () => {
                     placeholder="Вводить задачу сюда"
                     onChange={(e) => setContent(e.target.value)}
                 />
-                <InputDateContainer>
-                    <InputDate
-                        type="date"
-                        value={targetDate}
-                        onChange={(e) => setTargetDate(e.target.value)}
-                    />
-                </InputDateContainer>
+                <Datepicker value={targetDate} onChange={(date) => setTargetDate(date)} />
 
                 <InputButton onClick={() => handleAddTodo()} />
             </InputContainer>
