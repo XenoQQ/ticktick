@@ -11,7 +11,7 @@ import IconArrowDown from "../assets/arrow-down.png";
 const InputContainer = styled.div<{ priority: string }>`
     display: flex;
     height: 55px;
-    margin: 5px 0 5px 0;
+    margin: 0;
     padding: 0;
 
     border: 3px solid;
