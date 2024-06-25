@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { TodoItemProps } from "../controls/types";
 
@@ -18,8 +17,14 @@ const todoSlice = createSlice({
 
             state.push(newTodo);
         },
+        toggleDoneStatus: (state, action: PayloadAction<string>) => {
+            const todo = state.find((todo) => todo.data.id === action.payload);
+            if (todo) {
+                todo.data.doneStatus = !todo.data.doneStatus;
+            }
+        },
     },
 });
 
-export const { addTodo } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus } = todoSlice.actions;
 export default todoSlice.reducer;

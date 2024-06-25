@@ -5,10 +5,10 @@ export interface TodoItemProps {
         content: string;
         priority: "none" | "low" | "medium" | "high";
         doneStatus: boolean;
-        tags: string[];
+        tags: string[] | null;
         timeOfCreation: string;
-        timeOfCompletion?: string | undefined;
-        targetDate: string | undefined;
+        timeOfCompletion?: string | null;
+        targetDate: string | null;
         type: string;
         childrenKeys: string[];
     };
