@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -49,7 +49,7 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
     const [currentDate, setCurrentDate] = React.useState<Date | null>(value || null);
     const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
 
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const wrapperRef = React.useRef<HTMLDivElement | null>(null);
 
     const handleClickOutside = (event: MouseEvent) => {
         if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -57,7 +57,7 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
         }
     };
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (calendarVisible) {
             document.addEventListener("mousedown", handleClickOutside);
         } else {

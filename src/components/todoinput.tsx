@@ -133,6 +133,9 @@ const TodoInput: React.FC = () => {
     const [priorityMenuVisible, setPriorityMenuVisible] = React.useState<boolean>(false);
     const [priority, setPriority] = React.useState<"none" | "low" | "medium" | "high">("none");
 
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const priorityMenuRef = React.useRef<HTMLDivElement>(null);
+
     const dispatch = useDispatch();
     const todosFromRedux = useSelector((state: RootState) => state.todos);
 
@@ -178,24 +181,47 @@ const TodoInput: React.FC = () => {
     const handlePrioritySelect = (priority: "none" | "low" | "medium" | "high") => {
         setPriority(priority);
         setPriorityMenuVisible((prevstate) => !prevstate);
+        inputRef.current?.focus();
     };
+
+    const handleDateSelect = (date: Date | null) => {
+        setTargetDate(date);
+        inputRef.current?.focus();
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (priorityMenuRef.current && !priorityMenuRef.current.contains(event.target as Node)) {
+            setPriorityMenuVisible(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (priorityMenuVisible) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [priorityMenuVisible]);
 
     return (
         <>
             <InputContainer priority={priority}>
                 <InputForm
-                    id="input_form"
+                    ref={inputRef}
                     type="text"
                     value={content}
                     placeholder="Вводить задачу сюда"
                     onChange={(e) => setContent(e.target.value)}
                     onKeyDown={handleKeyDown}
                 />
-                <Datepicker value={targetDate} onChange={(date) => setTargetDate(date)} />
+                <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
 
-                <PriorityButton onClick={() => handlePriorityMenuClick()} />
+                <PriorityButton onClick={() => handlePriorityMenuClick()} title="Приоритет" />
                 {priorityMenuVisible && (
-                    <PriorityMenu>
+                    <PriorityMenu ref={priorityMenuRef}>
                         <PriorityMenuTitle>Приоритет</PriorityMenuTitle>
                         <PriorityMenuButton boColor="#D52b24" onClick={() => handlePrioritySelect("high")} />
                         <PriorityMenuButton boColor="#FAA80C" onClick={() => handlePrioritySelect("medium")} />
