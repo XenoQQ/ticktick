@@ -12,7 +12,7 @@ const InputDateContainer = styled.div`
 
 const DatePickerWrapper = styled.div`
     position: absolute;
-    top: 80px;
+    top: 155px;
 
     border: none;
     background-color: transparent;

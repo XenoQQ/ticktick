@@ -81,8 +81,8 @@ const PriorityButton = styled.button`
 
 const PriorityMenu = styled.div`
     position: absolute;
-    right: -98px;
-    top: 60px;
+    right: -100px;
+    top: 150px;
 
     display: flex;
     width: 140px;
