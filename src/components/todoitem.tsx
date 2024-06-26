@@ -9,6 +9,8 @@ const Container = styled.div`
     height: 45px;
     padding: 5px;
 
+    margin: 5px 0 0 0;
+
     border: 3px solid #3b3b3b;
     border-radius: 5px;
 
