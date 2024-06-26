@@ -38,8 +38,6 @@ const CalendarIcon = styled.div`
     }
 `;
 
-
-
 interface DateProps {
     onChange?: (date: Date | null) => void;
     value?: Date | null;
