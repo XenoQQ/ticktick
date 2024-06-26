@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import IconSort from "../assets/icon-sort.png";
+import { FaWineGlassEmpty } from "react-icons/fa6";
 
 const ToolbarButton = styled.div`
     position: absolute;
@@ -67,7 +68,6 @@ const ToolbarOptionbutton = styled.button`
     align-items: center;
     justify-content: center;
 
-    
     transition: 1s ease;
 
     cursor: pointer;
@@ -78,19 +78,130 @@ const ToolbarOptionbutton = styled.button`
     }
 `;
 
-const TodoToolbar: React.FC = () => {
-    const [toolbarVisible, setToolbarVisible] = React.useState<boolean>(false);
+const GroupOptionsContainer = styled.div`
+    position: absolute;
 
-    const handleToolbarButtonClick = () => {
-        setToolbarVisible((prevstate) => !prevstate);
+    top: 100px;
+
+    display: flex;
+    width: 140px;
+    height: 125px;
+    padding: 0 5px 0 5px;
+
+    background-color: #202020;
+
+    border: 3px solid;
+    border-radius: 5px;
+    border-color: #3b3b3b;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+`;
+
+const SortOptionsContainer = styled.div`
+    position: absolute;
+
+    top: 300px;
+
+    display: flex;
+    width: 140px;
+    height: 150px;
+    padding: 0 5px 0 5px;
+
+    background-color: #202020;
+
+    border: 3px solid;
+    border-radius: 5px;
+    border-color: #3b3b3b;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+`;
+
+/* Дата, метка, приоритет, нет;
+Дата, название, метка, приоритет, нет; */
+
+const TodoToolbar: React.FC = () => {
+    const [visibleCase, setVisibleCase] = React.useState({
+        containerVisible: false,
+        groupVisible: false,
+        sortVisible: false,
+    });
+
+    const handleButtonClick = (caseName: string) => {
+        if (caseName === "containerVisible") {
+            setVisibleCase((prevstate) => ({
+                ...prevstate,
+                containerVisible: !prevstate.containerVisible,
+                groupVisible: false,
+                sortVisible: false,
+            }));
+        }
+        if (caseName === "groupVisible") {
+            setVisibleCase((prevstate) => ({
+                ...prevstate,
+                groupVisible: !prevstate.groupVisible,
+                sortVisible: false,
+            }));
+        }
+        if (caseName === "sortVisible") {
+            setVisibleCase((prevstate) => ({ ...prevstate, sortVisible: !prevstate.sortVisible, groupVisible: false }));
+        }
     };
+
+    const toolBarRef = React.useRef<HTMLDivElement>(null);
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (toolBarRef.current && !toolBarRef.current.contains(event.target as Node)) {
+            setVisibleCase((prevstate) => ({
+                ...prevstate,
+                containerVisible: false,
+                sortVisible: false,
+                groupVisible: false,
+            }));
+        }
+    };
+
+    React.useEffect(() => {
+        if (visibleCase.containerVisible) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [visibleCase.containerVisible]);
     return (
         <>
-            <ToolbarButton onClick={() => handleToolbarButtonClick()} />
-            {toolbarVisible && (
-                <ToolbarContainer>
-                    <ToolbarOptionbutton>Группировать</ToolbarOptionbutton>
-                    <ToolbarOptionbutton>Сортировать</ToolbarOptionbutton>
+            <ToolbarButton onClick={() => handleButtonClick("containerVisible")} />
+            {visibleCase.containerVisible && (
+                <ToolbarContainer ref={toolBarRef}>
+                    <ToolbarOptionbutton onClick={() => handleButtonClick("groupVisible")}>
+                        Группировать
+                    </ToolbarOptionbutton>
+                    <ToolbarOptionbutton onClick={() => handleButtonClick("sortVisible")}>
+                        Сортировать
+                    </ToolbarOptionbutton>
+                    {visibleCase.groupVisible && (
+                        <GroupOptionsContainer>
+                            <ToolbarOptionbutton>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>По метке</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>По приоритету</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>Нет</ToolbarOptionbutton>
+                        </GroupOptionsContainer>
+                    )}
+                    {visibleCase.sortVisible && (
+                        <SortOptionsContainer>
+                            <ToolbarOptionbutton>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>По названию</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>По метке</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>По приоритету</ToolbarOptionbutton>
+                            <ToolbarOptionbutton>Нет</ToolbarOptionbutton>
+                        </SortOptionsContainer>
+                    )}
                 </ToolbarContainer>
             )}
         </>
