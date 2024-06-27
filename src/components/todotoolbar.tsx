@@ -1,7 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 import IconSort from "../assets/icon-sort.png";
-import { FaWineGlassEmpty } from "react-icons/fa6";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store.ts";
+import { sortTodos } from "../store/todoSlice.ts";
 
 const ToolbarButton = styled.div`
     position: absolute;
@@ -174,6 +176,13 @@ const TodoToolbar: React.FC = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [visibleCase.containerVisible]);
+
+    const dispatch = useDispatch();
+    const todos = useSelector((state: RootState) => state.todos);
+
+    const handleSort = (sortCase: "date" | "name" | "priority" | "none") => {
+        dispatch(sortTodos(sortCase));
+    };
     return (
         <>
             <ToolbarButton onClick={() => handleButtonClick("containerVisible")} />
@@ -195,11 +204,13 @@ const TodoToolbar: React.FC = () => {
                     )}
                     {visibleCase.sortVisible && (
                         <SortOptionsContainer>
-                            <ToolbarOptionbutton>По дате</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>По названию</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort("date")}>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort("name")}>По названию</ToolbarOptionbutton>
                             <ToolbarOptionbutton>По метке</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>По приоритету</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>Нет</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort("priority")}>
+                                По приоритету
+                            </ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort("none")}>Нет</ToolbarOptionbutton>
                         </SortOptionsContainer>
                     )}
                 </ToolbarContainer>
