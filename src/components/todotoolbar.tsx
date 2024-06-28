@@ -4,6 +4,7 @@ import IconSort from "../assets/icon-sort.png";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store.ts";
 import { sortTodos } from "../store/todoSlice.ts";
+import { switchGroupCase } from "../store/groupSlice.ts";
 
 const ToolbarButton = styled.div`
     position: absolute;
@@ -183,6 +184,10 @@ const TodoToolbar: React.FC = () => {
     const handleSort = (sortCase: "date" | "name" | "priority" | "none") => {
         dispatch(sortTodos(sortCase));
     };
+
+    const handleGroup = (groupCase: "date" | "priority" | "tag" | "none") => {
+        dispatch(switchGroupCase(groupCase));
+    };
     return (
         <>
             <ToolbarButton onClick={() => handleButtonClick("containerVisible")} />
@@ -196,10 +201,12 @@ const TodoToolbar: React.FC = () => {
                     </ToolbarOptionbutton>
                     {visibleCase.groupVisible && (
                         <GroupOptionsContainer>
-                            <ToolbarOptionbutton>По дате</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>По метке</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>По приоритету</ToolbarOptionbutton>
-                            <ToolbarOptionbutton>Нет</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup("date")}>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup("tag")}>По метке</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup("priority")}>
+                                По приоритету
+                            </ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup("none")}>Нет</ToolbarOptionbutton>
                         </GroupOptionsContainer>
                     )}
                     {visibleCase.sortVisible && (

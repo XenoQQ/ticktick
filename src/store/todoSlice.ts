@@ -5,21 +5,12 @@ const initialState: TodoItemProps[] = [];
 
 type sortCase = "date" | "name" | "priority" | "none";
 
-type groupCase = "date" | "tag" | "priority" | "none";
-
 const todoSlice = createSlice({
     name: "todos",
     initialState,
     reducers: {
         addTodo: (state, action: PayloadAction<TodoItemProps>) => {
-            const newTodo: TodoItemProps = {
-                ...action.payload,
-                data: {
-                    ...action.payload.data,
-                },
-            };
-
-            state.push(newTodo);
+            state.push({ ...action.payload });
         },
         toggleDoneStatus: (state, action: PayloadAction<string>) => {
             const todo = state.find((todo) => todo.data.id === action.payload);
@@ -48,14 +39,6 @@ const todoSlice = createSlice({
                     break;
             }
         },
-        groupTodos: (state, action: PayloadAction<groupCase>) => {
-            switch (action.payload) {
-                case "date":
-                case "tag":
-                case "priority":
-                case "none":
-            }
-        }
     },
 });
 

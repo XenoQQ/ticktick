@@ -11,11 +11,43 @@ const TodolistContainer = styled.div`
 `;
 
 const TodoList: React.FC = () => {
-    const todosFromRedux = useSelector((state: RootState) => state.todos);
+    const todos = useSelector((state: RootState) => state.todos);
+    const groupSwitch = useSelector((state: RootState) => state.groupSwitch);
+
+    const groupTodos = (groupCase: string) => {
+        const groupKey = (key: string) => {
+            return todos.reduce((acc, item) => {
+                const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
+                groupValues.forEach((groupvalue) => {
+                    if (!acc[groupvalue]) {
+                        acc[groupvalue] = [];
+                    }
+                    acc[groupvalue].push(item);
+                });
+                return acc;
+            }, {});
+        };
+
+        switch (groupCase) {
+            case "date":
+                return groupKey("timeOfCreation");
+            case "priority":
+                return groupKey("priority");
+            case "tag":
+                return groupKey("tags");
+            case "none":
+            default:
+                return todos;
+        }
+    };
+    const groupedTodos = Object.entries(groupTodos(groupSwitch));
+
+    console.log(groupedTodos);
+
     return (
         <>
             <TodolistContainer>
-                {todosFromRedux.map((todo) => (
+                {todos.map((todo) => (
                     <TodoItem key={todo.key} data={todo.data} />
                 ))}
             </TodolistContainer>

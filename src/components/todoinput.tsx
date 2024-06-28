@@ -141,8 +141,21 @@ const TodoInput: React.FC = () => {
 
     const handleAddTodo = () => {
         if (content) {
-            const tags = content.match(/#\w+/g) || [];
-            const contentWithoutTags = content.replace(/#\w+/g, "").trim();
+            const formatDate = (currentDate: Date) => {
+                let dd = currentDate.getDate();
+                if (dd < 10) dd = 0 + dd;
+
+                let mm = currentDate.getMonth() + 1;
+                if (mm < 10) mm = 0 + mm;
+
+                let yy = currentDate.getFullYear() % 100;
+                if (yy < 10) yy = 0 + yy;
+
+                return dd + "." + mm + "." + yy;
+            };
+
+            const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ["none"];
+            const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, "").trim();
 
             const newTodo: TodoItemProps = {
                 key: uuidv4(),
@@ -152,7 +165,7 @@ const TodoInput: React.FC = () => {
                     priority: priority,
                     doneStatus: false,
                     tags: tags,
-                    timeOfCreation: new Date().toString(),
+                    timeOfCreation: formatDate(new Date()).toString(),
                     timeOfCompletion: null,
                     targetDate: targetDate?.toString() ?? null,
                     type: "parent",
