@@ -1,18 +1,16 @@
 import React from "react";
 import styled from "styled-components";
-import { addTodo } from "../store/todoSlice.ts";
+import { addTodo } from "../store/todoSlice";
 import { v4 as uuidv4 } from "uuid";
-import { TodoItemProps } from "../controls/types.ts";
+import { TodoItemProps } from "../controls/types";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store.ts";
-import Datepicker from "./datepicker.tsx";
-import IconArrowDown from "../assets/arrow-down.png";
+import { RootState } from "../store/store";
+import Datepicker from "./datepicker";
+import IconArrowDown from "../assets/images/arrow-down.png";
 
 const InputContainer = styled.div<{ priority: string }>`
     display: flex;
     height: 55px;
-    margin: 0;
-    padding: 0;
 
     border: 3px solid;
     border-radius: 5px;
@@ -33,6 +31,8 @@ const InputContainer = styled.div<{ priority: string }>`
 
     align-items: center;
     justify-content: space-between;
+
+    transition: border-color 0.5s ease;
 `;
 
 const InputForm = styled.input`
@@ -114,14 +114,14 @@ const PriorityMenuTitle = styled.div`
     justify-content: center;
 `;
 
-const PriorityMenuButton = styled.div<{ boColor: string }>`
+const PriorityMenuButton = styled.div<{ bocolor: string }>`
     display: flex;
     width: 25px;
     height: 25px;
 
     background-color: #202020;
 
-    border: 3px solid ${({ boColor }) => boColor};
+    border: 3px solid ${({ bocolor }) => bocolor};
     border-radius: 5px;
 
     cursor: pointer;
@@ -177,7 +177,6 @@ const TodoInput: React.FC = () => {
             setContent("");
             setPriority("none");
             setTargetDate(null);
-            console.log(todosFromRedux);
         }
     };
 
@@ -236,10 +235,10 @@ const TodoInput: React.FC = () => {
                 {priorityMenuVisible && (
                     <PriorityMenu ref={priorityMenuRef}>
                         <PriorityMenuTitle>Приоритет</PriorityMenuTitle>
-                        <PriorityMenuButton boColor="#D52b24" onClick={() => handlePrioritySelect("high")} />
-                        <PriorityMenuButton boColor="#FAA80C" onClick={() => handlePrioritySelect("medium")} />
-                        <PriorityMenuButton boColor="#4772fa" onClick={() => handlePrioritySelect("low")} />
-                        <PriorityMenuButton boColor="#3b3b3b" onClick={() => handlePrioritySelect("none")} />
+                        <PriorityMenuButton bocolor="#D52b24" onClick={() => handlePrioritySelect("high")} />
+                        <PriorityMenuButton bocolor="#FAA80C" onClick={() => handlePrioritySelect("medium")} />
+                        <PriorityMenuButton bocolor="#4772fa" onClick={() => handlePrioritySelect("low")} />
+                        <PriorityMenuButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect("none")} />
                     </PriorityMenu>
                 )}
             </InputContainer>

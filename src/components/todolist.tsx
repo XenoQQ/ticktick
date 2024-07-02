@@ -1,13 +1,23 @@
 import React from "react";
 import styled from "styled-components";
-import TodoItem from "./todoitem.tsx";
+import TodoItem from "./todoitem";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store.ts";
+import { RootState } from "../store/store";
+import { TodoItemProps, PriorityMap } from "../controls/types";
 
 const TodolistContainer = styled.div`
     display: flex;
 
     flex-direction: column;
+`;
+
+const Grouptitle = styled.div`
+    margin: 5px 0 0 0;
+    padding: 0 0 0 5px;
+
+    font-family: "Ubuntu", sans-serif;
+    color: #757575;
+    font-size: 15px;
 `;
 
 const TodoList: React.FC = () => {
@@ -16,16 +26,16 @@ const TodoList: React.FC = () => {
 
     const groupTodos = (groupCase: string) => {
         const groupKey = (key: string) => {
-            return todos.reduce((acc, item) => {
+            return todos.reduce((acc: Record<string, TodoItemProps[]>, item) => {
                 const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
-                groupValues.forEach((groupvalue) => {
+                groupValues.forEach((groupvalue: string) => {
                     if (!acc[groupvalue]) {
                         acc[groupvalue] = [];
                     }
                     acc[groupvalue].push(item);
                 });
                 return acc;
-            }, {});
+            }, {} as Record<string, TodoItemProps[]>);
         };
 
         switch (groupCase) {
@@ -37,20 +47,31 @@ const TodoList: React.FC = () => {
                 return groupKey("tags");
             case "none":
             default:
-                return todos;
+                return groupKey("");
         }
     };
-    const groupedTodos = Object.entries(groupTodos(groupSwitch));
 
-    console.log(groupedTodos);
+    const groupKeyTranslations: PriorityMap = {
+        none: "Нет",
+        low: "Не то чтобы очень важно",
+        medium: "Ну так, средней важности",
+        high: "Пиздец как важно, прямо очень!",
+    };
+
+    type GroupedTodos = [string, TodoItemProps[]][];
+
+    const groupedTodos: GroupedTodos = Object.entries(groupTodos(groupSwitch));
 
     return (
         <>
-            <TodolistContainer>
-                {todos.map((todo) => (
-                    <TodoItem key={todo.key} data={todo.data} />
-                ))}
-            </TodolistContainer>
+            {groupedTodos.map(([key, group]) => (
+                <TodolistContainer key={key}>
+                    {key && key !== "undefined" && <Grouptitle>{groupKeyTranslations[key]}</Grouptitle>}
+                    {group.map((todo) => (
+                        <TodoItem key={todo.key} data={todo.data} />
+                    ))}
+                </TodolistContainer>
+            ))}
         </>
     );
 };

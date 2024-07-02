@@ -1,8 +1,13 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { TodoItemProps } from "../controls/types";
 import { useDispatch } from "react-redux";
-import { toggleDoneStatus } from "../store/todoSlice.ts";
+import { toggleDoneStatus } from "../store/todoSlice";
+
+const fadeIn = keyframes`
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+`;
 
 const Container = styled.div`
     display: flex;
@@ -17,6 +22,8 @@ const Container = styled.div`
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
+
+    animation: ${fadeIn} 1s ease;
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`

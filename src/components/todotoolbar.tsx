@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
-import IconSort from "../assets/icon-sort.png";
+import IconSort from "../assets/images/icon-sort.png";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store.ts";
-import { sortTodos } from "../store/todoSlice.ts";
-import { switchGroupCase } from "../store/groupSlice.ts";
+import { RootState } from "../store/store";
+import { sortTodos } from "../store/todoSlice";
+import { switchGroupCase } from "../store/groupSlice";
 
 const ToolbarButton = styled.div`
     position: absolute;
@@ -84,7 +84,8 @@ const ToolbarOptionbutton = styled.button`
 const GroupOptionsContainer = styled.div`
     position: absolute;
 
-    top: 100px;
+    top: -3px;
+    right: 157px;
 
     display: flex;
     width: 140px;
@@ -105,7 +106,8 @@ const GroupOptionsContainer = styled.div`
 const SortOptionsContainer = styled.div`
     position: absolute;
 
-    top: 300px;
+    top: 29px;
+    right: 157px;
 
     display: flex;
     width: 140px;
@@ -155,9 +157,10 @@ const TodoToolbar: React.FC = () => {
     };
 
     const toolBarRef = React.useRef<HTMLDivElement>(null);
+    const buttonRef = React.useRef<HTMLDivElement>(null);
 
     const handleClickOutside = (event: MouseEvent) => {
-        if (toolBarRef.current && !toolBarRef.current.contains(event.target as Node)) {
+        if (toolBarRef.current && !toolBarRef.current.contains(event.target as Node) && !buttonRef.current) {
             setVisibleCase((prevstate) => ({
                 ...prevstate,
                 containerVisible: false,
@@ -190,7 +193,7 @@ const TodoToolbar: React.FC = () => {
     };
     return (
         <>
-            <ToolbarButton onClick={() => handleButtonClick("containerVisible")} />
+            <ToolbarButton ref={buttonRef} onClick={() => handleButtonClick("containerVisible")} />
             {visibleCase.containerVisible && (
                 <ToolbarContainer ref={toolBarRef}>
                     <ToolbarOptionbutton onClick={() => handleButtonClick("groupVisible")}>

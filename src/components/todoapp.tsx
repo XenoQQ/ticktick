@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-import TodoList from "./todolist.tsx";
-import TodoInput from "./todoinput.tsx";
-import TodoToolbar from "./todotoolbar.tsx";
+import TodoList from "./todolist";
+import TodoInput from "./todoinput";
+import TodoToolbar from "./todotoolbar";
 
 const Appbody = styled.div`
     position: absolute;
