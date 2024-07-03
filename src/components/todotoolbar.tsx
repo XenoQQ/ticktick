@@ -1,10 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import IconSort from "../assets/images/icon-sort.png";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { sortTodos } from "../store/todoSlice";
-import { switchGroupCase } from "../store/groupSlice";
+import React from 'react';
+import styled from 'styled-components';
+import IconSort from '../assets/images/icon-sort.png';
+import { useDispatch } from 'react-redux';
+import { sortTodos } from '../store/todoSlice';
+import { switchGroupCase } from '../store/groupSlice';
 
 const ToolbarButton = styled.div`
     position: absolute;
@@ -64,7 +63,7 @@ const ToolbarOptionbutton = styled.button`
 
     background-color: #202020;
 
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #757575;
     font-size: 15px;
 
@@ -125,9 +124,6 @@ const SortOptionsContainer = styled.div`
     justify-content: space-evenly;
 `;
 
-/* Дата, метка, приоритет, нет;
-Дата, название, метка, приоритет, нет; */
-
 const TodoToolbar: React.FC = () => {
     const [visibleCase, setVisibleCase] = React.useState({
         containerVisible: false,
@@ -136,7 +132,7 @@ const TodoToolbar: React.FC = () => {
     });
 
     const handleButtonClick = (caseName: string) => {
-        if (caseName === "containerVisible") {
+        if (caseName === 'containerVisible') {
             setVisibleCase((prevstate) => ({
                 ...prevstate,
                 containerVisible: !prevstate.containerVisible,
@@ -144,15 +140,19 @@ const TodoToolbar: React.FC = () => {
                 sortVisible: false,
             }));
         }
-        if (caseName === "groupVisible") {
+        if (caseName === 'groupVisible') {
             setVisibleCase((prevstate) => ({
                 ...prevstate,
                 groupVisible: !prevstate.groupVisible,
                 sortVisible: false,
             }));
         }
-        if (caseName === "sortVisible") {
-            setVisibleCase((prevstate) => ({ ...prevstate, sortVisible: !prevstate.sortVisible, groupVisible: false }));
+        if (caseName === 'sortVisible') {
+            setVisibleCase((prevstate) => ({
+                ...prevstate,
+                sortVisible: !prevstate.sortVisible,
+                groupVisible: false,
+            }));
         }
     };
 
@@ -172,55 +172,46 @@ const TodoToolbar: React.FC = () => {
 
     React.useEffect(() => {
         if (visibleCase.containerVisible) {
-            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener('mousedown', handleClickOutside);
         } else {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         }
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [visibleCase.containerVisible]);
 
     const dispatch = useDispatch();
-    const todos = useSelector((state: RootState) => state.todos);
 
-    const handleSort = (sortCase: "date" | "name" | "priority" | "none") => {
+    const handleSort = (sortCase: 'date' | 'name' | 'priority' | 'none') => {
         dispatch(sortTodos(sortCase));
     };
 
-    const handleGroup = (groupCase: "date" | "priority" | "tag" | "none") => {
+    const handleGroup = (groupCase: 'date' | 'priority' | 'tag' | 'none') => {
         dispatch(switchGroupCase(groupCase));
     };
     return (
         <>
-            <ToolbarButton ref={buttonRef} onClick={() => handleButtonClick("containerVisible")} />
+            <ToolbarButton ref={buttonRef} onClick={() => handleButtonClick('containerVisible')} />
             {visibleCase.containerVisible && (
                 <ToolbarContainer ref={toolBarRef}>
-                    <ToolbarOptionbutton onClick={() => handleButtonClick("groupVisible")}>
-                        Группировать
-                    </ToolbarOptionbutton>
-                    <ToolbarOptionbutton onClick={() => handleButtonClick("sortVisible")}>
-                        Сортировать
-                    </ToolbarOptionbutton>
+                    <ToolbarOptionbutton onClick={() => handleButtonClick('groupVisible')}>Группировать</ToolbarOptionbutton>
+                    <ToolbarOptionbutton onClick={() => handleButtonClick('sortVisible')}>Сортировать</ToolbarOptionbutton>
                     {visibleCase.groupVisible && (
                         <GroupOptionsContainer>
-                            <ToolbarOptionbutton onClick={() => handleGroup("date")}>По дате</ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleGroup("tag")}>По метке</ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleGroup("priority")}>
-                                По приоритету
-                            </ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleGroup("none")}>Нет</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup('date')}>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup('tag')}>По метке</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup('priority')}>По приоритету</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleGroup('none')}>Нет</ToolbarOptionbutton>
                         </GroupOptionsContainer>
                     )}
                     {visibleCase.sortVisible && (
                         <SortOptionsContainer>
-                            <ToolbarOptionbutton onClick={() => handleSort("date")}>По дате</ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleSort("name")}>По названию</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort('date')}>По дате</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort('name')}>По названию</ToolbarOptionbutton>
                             <ToolbarOptionbutton>По метке</ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleSort("priority")}>
-                                По приоритету
-                            </ToolbarOptionbutton>
-                            <ToolbarOptionbutton onClick={() => handleSort("none")}>Нет</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort('priority')}>По приоритету</ToolbarOptionbutton>
+                            <ToolbarOptionbutton onClick={() => handleSort('none')}>Нет</ToolbarOptionbutton>
                         </SortOptionsContainer>
                     )}
                 </ToolbarContainer>

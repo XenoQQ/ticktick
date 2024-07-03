@@ -1,7 +1,7 @@
 import Todoapp from "./components/todoapp";
 
 const App = () => {
-    return <Todoapp />;
+  return <Todoapp />;
 };
 
 export default App;

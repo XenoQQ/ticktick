@@ -1,8 +1,8 @@
-import React from "react";
-import styled, { keyframes } from "styled-components";
-import { TodoItemProps } from "../controls/types";
-import { useDispatch } from "react-redux";
-import { toggleDoneStatus } from "../store/todoSlice";
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
+import { TodoItemProps } from '../controls/types';
+import { useDispatch } from 'react-redux';
+import { toggleDoneStatus } from '../store/todoSlice';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -37,16 +37,16 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     border: 3px solid;
     border-color: ${({ priority }) => {
         switch (priority) {
-            case "none":
-                return "#3b3b3b";
-            case "low":
-                return "#4772fa";
-            case "medium":
-                return "#FAA80C";
-            case "high":
-                return "#D52b24";
+            case 'none':
+                return '#3b3b3b';
+            case 'low':
+                return '#4772fa';
+            case 'medium':
+                return '#FAA80C';
+            case 'high':
+                return '#D52b24';
             default:
-                return "#3b3b3b";
+                return '#3b3b3b';
         }
     }};
 
@@ -59,7 +59,7 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     }
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         position: relative;
         top: 40%;
@@ -70,20 +70,20 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         border-width: 0 4px 4px 0;
         border-color: ${({ priority }) => {
             switch (priority) {
-                case "none":
-                    return "#3b3b3b";
-                case "low":
-                    return "#4772fa";
-                case "medium":
-                    return "#FAA80C";
-                case "high":
-                    return "#D52b24";
+                case 'none':
+                    return '#3b3b3b';
+                case 'low':
+                    return '#4772fa';
+                case 'medium':
+                    return '#FAA80C';
+                case 'high':
+                    return '#D52b24';
                 default:
-                    return "#3b3b3b";
+                    return '#3b3b3b';
             }
         }};
         transform: translate(-50%, -50%) rotate(35deg);
-        opacity: ${({ checked }) => (checked ? "1" : "0")};
+        opacity: ${({ checked }) => (checked ? '1' : '0')};
         transition: opacity 0.3s ease;
     }
 `;
@@ -95,7 +95,7 @@ const Textfield = styled.div`
 
     font-size: 25px;
 
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #757575;
     font-size: 25px;
 

@@ -18,5 +18,5 @@ root.render(
       <Normalize />
       <App />
     </Provider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

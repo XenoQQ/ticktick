@@ -1,8 +1,8 @@
-import React from "react";
-import styled from "styled-components";
-import TodoList from "./todolist";
-import TodoInput from "./todoinput";
-import TodoToolbar from "./todotoolbar";
+import React from 'react';
+import { styled } from 'styled-components';
+import TodoList from './todolist';
+import TodoInput from './todoinput';
+import TodoToolbar from './todotoolbar';
 
 const Appbody = styled.div`
     position: absolute;
@@ -30,12 +30,11 @@ const TodoTitle = styled.div`
     margin: 20px 0 25px 0;
 
     font-size: 40px;
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #757575;
 
     justify-content: center;
     align-items: center;
-
 `;
 
 const Todoapp: React.FC = () => {

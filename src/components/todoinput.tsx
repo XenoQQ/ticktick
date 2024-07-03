@@ -1,12 +1,12 @@
-import React from "react";
-import styled from "styled-components";
-import { addTodo } from "../store/todoSlice";
-import { v4 as uuidv4 } from "uuid";
-import { TodoItemProps } from "../controls/types";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store";
-import Datepicker from "./datepicker";
-import IconArrowDown from "../assets/images/arrow-down.png";
+import React from 'react';
+import { styled } from 'styled-components';
+import { addTodo } from '../store/todoSlice';
+import { v4 as uuidv4 } from 'uuid';
+import { TodoItemProps } from '../controls/types';
+import { useDispatch } from 'react-redux';
+
+import Datepicker from './datepicker';
+import IconArrowDown from '../assets/images/arrow-down.png';
 
 const InputContainer = styled.div<{ priority: string }>`
     display: flex;
@@ -16,16 +16,16 @@ const InputContainer = styled.div<{ priority: string }>`
     border-radius: 5px;
     border-color: ${({ priority }) => {
         switch (priority) {
-            case "none":
-                return "#3b3b3b";
-            case "low":
-                return "#4772fa";
-            case "medium":
-                return "#FAA80C";
-            case "high":
-                return "#D52b24";
+            case 'none':
+                return '#3b3b3b';
+            case 'low':
+                return '#4772fa';
+            case 'medium':
+                return '#FAA80C';
+            case 'high':
+                return '#D52b24';
             default:
-                return "#3b3b3b";
+                return '#3b3b3b';
         }
     }};
 
@@ -42,7 +42,7 @@ const InputForm = styled.input`
     margin: 0;
     padding: 0 0 0 15px;
 
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #dfdfdf;
     font-size: 25px;
 
@@ -107,7 +107,7 @@ const PriorityMenuTitle = styled.div`
     display: flex;
     width: 100%;
 
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #757575;
     font-size: 15px;
 
@@ -128,16 +128,15 @@ const PriorityMenuButton = styled.div<{ bocolor: string }>`
 `;
 
 const TodoInput: React.FC = () => {
-    const [content, setContent] = React.useState<string>("");
+    const [content, setContent] = React.useState<string>('');
     const [targetDate, setTargetDate] = React.useState<Date | null>(null);
     const [priorityMenuVisible, setPriorityMenuVisible] = React.useState<boolean>(false);
-    const [priority, setPriority] = React.useState<"none" | "low" | "medium" | "high">("none");
+    const [priority, setPriority] = React.useState<'none' | 'low' | 'medium' | 'high'>('none');
 
     const inputRef = React.useRef<HTMLInputElement>(null);
     const priorityMenuRef = React.useRef<HTMLDivElement>(null);
 
     const dispatch = useDispatch();
-    const todosFromRedux = useSelector((state: RootState) => state.todos);
 
     const handleAddTodo = () => {
         if (content) {
@@ -151,11 +150,11 @@ const TodoInput: React.FC = () => {
                 let yy = currentDate.getFullYear() % 100;
                 if (yy < 10) yy = 0 + yy;
 
-                return dd + "." + mm + "." + yy;
+                return dd + '.' + mm + '.' + yy;
             };
 
-            const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ["none"];
-            const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, "").trim();
+            const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
+            const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
 
             const newTodo: TodoItemProps = {
                 key: uuidv4(),
@@ -168,20 +167,20 @@ const TodoInput: React.FC = () => {
                     timeOfCreation: formatDate(new Date()).toString(),
                     timeOfCompletion: null,
                     targetDate: targetDate?.toString() ?? null,
-                    type: "parent",
+                    type: 'parent',
                     childrenKeys: [],
                 },
             };
 
             dispatch(addTodo(newTodo));
-            setContent("");
-            setPriority("none");
+            setContent('');
+            setPriority('none');
             setTargetDate(null);
         }
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
+        if (event.key === 'Enter') {
             handleAddTodo();
         }
     };
@@ -190,7 +189,7 @@ const TodoInput: React.FC = () => {
         setPriorityMenuVisible((prevstate) => !prevstate);
     };
 
-    const handlePrioritySelect = (priority: "none" | "low" | "medium" | "high") => {
+    const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
         setPriority(priority);
         setPriorityMenuVisible((prevstate) => !prevstate);
         inputRef.current?.focus();
@@ -209,12 +208,12 @@ const TodoInput: React.FC = () => {
 
     React.useEffect(() => {
         if (priorityMenuVisible) {
-            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener('mousedown', handleClickOutside);
         } else {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         }
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [priorityMenuVisible]);
 
@@ -235,10 +234,10 @@ const TodoInput: React.FC = () => {
                 {priorityMenuVisible && (
                     <PriorityMenu ref={priorityMenuRef}>
                         <PriorityMenuTitle>Приоритет</PriorityMenuTitle>
-                        <PriorityMenuButton bocolor="#D52b24" onClick={() => handlePrioritySelect("high")} />
-                        <PriorityMenuButton bocolor="#FAA80C" onClick={() => handlePrioritySelect("medium")} />
-                        <PriorityMenuButton bocolor="#4772fa" onClick={() => handlePrioritySelect("low")} />
-                        <PriorityMenuButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect("none")} />
+                        <PriorityMenuButton bocolor="#D52b24" onClick={() => handlePrioritySelect('high')} />
+                        <PriorityMenuButton bocolor="#FAA80C" onClick={() => handlePrioritySelect('medium')} />
+                        <PriorityMenuButton bocolor="#4772fa" onClick={() => handlePrioritySelect('low')} />
+                        <PriorityMenuButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect('none')} />
                     </PriorityMenu>
                 )}
             </InputContainer>

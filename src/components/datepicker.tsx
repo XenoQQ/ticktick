@@ -1,8 +1,8 @@
-import React from "react";
-import styled from "styled-components";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import CalendarIconPng from "../assets/images/calendar-icon.png";
+import React from 'react';
+import { styled } from 'styled-components';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import CalendarIconPng from '../assets/images/calendar-icon.png';
 
 const InputDateContainer = styled.div`
     display: flex;
@@ -57,12 +57,12 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
 
     React.useEffect(() => {
         if (calendarVisible) {
-            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener('mousedown', handleClickOutside);
         } else {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         }
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [calendarVisible]);
 
@@ -85,13 +85,7 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
                 <CalendarIcon onClick={() => handleClick()} title="Выбрать дату выполнения" />
                 {calendarVisible && (
                     <DatePickerWrapper>
-                        <DatePicker
-                            id="date-picker"
-                            selected={currentDate}
-                            onChange={handleChange}
-                            dateFormat="dd/MM/yyyy"
-                            inline
-                        />
+                        <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/MM/yyyy" inline />
                     </DatePickerWrapper>
                 )}
             </InputDateContainer>
