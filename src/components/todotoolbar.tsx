@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import IconSort from '../assets/images/icon-sort.png';
 import { useDispatch } from 'react-redux';
 import { sortTodos } from '../store/todoSlice';
