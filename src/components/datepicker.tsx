@@ -22,19 +22,20 @@ const DatePickerWrapper = styled.div`
 `;
 
 const CalendarIcon = styled.div`
-    width: 30px;
     height: 30px;
+    aspect-ratio: 1/1;
+
+    margin-right: 8px;
 
     background: no-repeat center/100% url(${CalendarIconPng});
 
-    cursor: pointer;
-    margin-right: 8px;
-
     transition: 1s ease;
 
+    cursor: pointer;
+
     &:hover {
-        background-size: 110%;
-        transition: background-size 0.3s ease;
+        opacity: 0.7;
+        transition: 0s;
     }
 `;
 

@@ -124,6 +124,8 @@ const SortOptionsContainer = styled.div`
     justify-content: space-evenly;
 `;
 
+type VisibleCase = 'containerVisible' | 'groupVisible' | 'sortVisible';
+
 const TodoToolbar: React.FC = () => {
     const [visibleCase, setVisibleCase] = React.useState({
         containerVisible: false,
@@ -131,42 +133,34 @@ const TodoToolbar: React.FC = () => {
         sortVisible: false,
     });
 
-    const handleButtonClick = (caseName: string) => {
-        if (caseName === 'containerVisible') {
-            setVisibleCase((prevstate) => ({
-                ...prevstate,
-                containerVisible: !prevstate.containerVisible,
-                groupVisible: false,
-                sortVisible: false,
-            }));
-        }
-        if (caseName === 'groupVisible') {
-            setVisibleCase((prevstate) => ({
-                ...prevstate,
-                groupVisible: !prevstate.groupVisible,
-                sortVisible: false,
-            }));
-        }
-        if (caseName === 'sortVisible') {
-            setVisibleCase((prevstate) => ({
-                ...prevstate,
-                sortVisible: !prevstate.sortVisible,
-                groupVisible: false,
-            }));
-        }
+    const handleButtonClick = (caseName: VisibleCase) => {
+        setVisibleCase((prevstate) => {
+            const newState = { ...prevstate, groupVisible: false, sortVisible: false };
+            if (caseName === 'containerVisible') {
+                newState.containerVisible = !prevstate.containerVisible;
+            } else {
+                newState.containerVisible = true;
+                newState[caseName] = !prevstate[caseName];
+            }
+            return newState;
+        });
     };
 
     const toolBarRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLDivElement>(null);
 
     const handleClickOutside = (event: MouseEvent) => {
-        if (toolBarRef.current && !toolBarRef.current.contains(event.target as Node) && !buttonRef.current) {
-            setVisibleCase((prevstate) => ({
-                ...prevstate,
+        if (
+            toolBarRef.current &&
+            !toolBarRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setVisibleCase({
                 containerVisible: false,
                 sortVisible: false,
                 groupVisible: false,
-            }));
+            });
         }
     };
 
@@ -180,6 +174,17 @@ const TodoToolbar: React.FC = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [visibleCase.containerVisible]);
+
+    React.useEffect(() => {
+        if (visibleCase.groupVisible || visibleCase.sortVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [visibleCase.groupVisible, visibleCase.sortVisible]);
 
     const dispatch = useDispatch();
 

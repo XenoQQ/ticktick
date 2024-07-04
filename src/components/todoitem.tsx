@@ -11,10 +11,12 @@ const fadeIn = keyframes`
 `;
 
 const Container = styled.div`
+    position: relative;
+
     display: flex;
     height: 45px;
-    padding: 5px;
 
+    padding: 5px;
     margin: 5px 0 0 0;
 
     border: 3px solid #3b3b3b;
@@ -28,12 +30,12 @@ const Container = styled.div`
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`
-    margin-right: 10px;
-
     display: flex;
     height: calc(100% - 6px);
-
     aspect-ratio: 1/1;
+
+    margin-right: 10px;
+
     border-radius: 5px;
     border: 3px solid;
     border-color: ${({ priority }) => {
@@ -94,49 +96,53 @@ const Textfield = styled.div`
     width: 100%;
     height: 100%;
 
-    font-size: 25px;
+    background-color: #202020;
 
     font-family: 'Ubuntu', sans-serif;
-    color: #757575;
     font-size: 25px;
-
-    background-color: #202020;
+    color: #757575;
 
     list-style: none;
     align-items: center;
 `;
 
 const MenuButton = styled.div`
-    width: 40px;
+    height: calc(100% - 6px);
     aspect-ratio: 1/1;
 
     border: 3px solid #3b3b3b;
     border-radius: 5px;
-
     background: no-repeat center/80% url(${IconMenu});
+
+    transition: 1s ease;
+
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.7;
+        transition: 0s;
+    }
 `;
 
 const MenuContainer = styled.div`
     position: absolute;
-    right: -100px;
-    top: 150px;
+    right: -157px;
+    top: 50%;
+    transform: translateY(-50%);
 
     display: flex;
-    width: 140px;
-    height: 60px;
+    width: 134px;
+    height: 54px;
 
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-
     border: 3px solid #3b3b3b;
     border-radius: 5px;
 
     flex-direction: row;
-
     align-items: center;
     justify-content: space-between;
-
     flex-wrap: wrap;
 `;
 
@@ -162,8 +168,11 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     };
 
     const handleDelete = () => {
-        dispatch(deleteTodo(data.id));
+        setTimeout(() => {
+            dispatch(deleteTodo(data.id));
+        }, 500);
     };
+
     return (
         <>
             <Container draggable>

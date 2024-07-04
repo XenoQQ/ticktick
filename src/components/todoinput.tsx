@@ -4,13 +4,16 @@ import { addTodo } from '../store/todoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
-
 import Datepicker from './datepicker';
 import IconArrowDown from '../assets/images/arrow-down.png';
 
 const InputContainer = styled.div<{ priority: string }>`
+    position: relative;
+
     display: flex;
-    height: 55px;
+    height: 45px;
+
+    padding: 5px;
 
     border: 3px solid;
     border-radius: 5px;
@@ -39,12 +42,12 @@ const InputForm = styled.input`
     display: flex;
     width: 100%;
     height: 100%;
-    margin: 0;
+
     padding: 0 0 0 15px;
 
     font-family: 'Ubuntu', sans-serif;
-    color: #dfdfdf;
     font-size: 25px;
+    color: #dfdfdf;
 
     background-color: #202020;
     border: none;
@@ -56,50 +59,46 @@ const InputForm = styled.input`
 
 const PriorityButton = styled.button`
     display: flex;
-    width: 30px;
-    height: 25px;
-    margin: 0 10px 0 0;
-    padding: 0;
+    height: calc(100% - 6px);
+    aspect-ratio: 1/1;
 
-    background: no-repeat center/100% url(${IconArrowDown});
+    margin-right: 3px;
+
+    background: no-repeat center/90% url(${IconArrowDown});
     border: none;
-    border-radius: 5px;
 
-    transition:
-        1s,
-        flex-basis 0.1s;
     align-items: center;
     justify-content: center;
+
+    transition: 1s ease;
 
     cursor: pointer;
 
     &:hover {
-        background-size: 120%;
-        transition: background-size 0.3s ease;
+        opacity: 0.7;
+        transition: 0s;
     }
 `;
 
 const PriorityMenu = styled.div`
     position: absolute;
-    right: -100px;
-    top: 150px;
+    right: -157px;
+    top: 50%;
+    transform: translateY(-50%);
 
     display: flex;
-    width: 140px;
-    height: 60px;
+    width: 134px;
+    height: 54px;
 
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-
     border: 3px solid #3b3b3b;
     border-radius: 5px;
 
     flex-direction: row;
-
     align-items: center;
     justify-content: space-between;
-
     flex-wrap: wrap;
 `;
 
@@ -108,8 +107,8 @@ const PriorityMenuTitle = styled.div`
     width: 100%;
 
     font-family: 'Ubuntu', sans-serif;
-    color: #757575;
     font-size: 15px;
+    color: #757575;
 
     justify-content: center;
 `;
@@ -120,7 +119,6 @@ const PriorityMenuButton = styled.div<{ bocolor: string }>`
     height: 25px;
 
     background-color: #202020;
-
     border: 3px solid ${({ bocolor }) => bocolor};
     border-radius: 5px;
 
