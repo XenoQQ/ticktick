@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, keyframes } from 'styled-components';
+import { styled, keyframes, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
 import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
@@ -10,7 +10,12 @@ const fadeIn = keyframes`
     100% { opacity: 1; }
 `;
 
-const Container = styled.div`
+const fadeOut = keyframes`
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+`;
+
+const Container = styled.div<{ onFadeOut: boolean }>`
     position: relative;
 
     display: flex;
@@ -26,7 +31,14 @@ const Container = styled.div`
     align-items: center;
     flex-direction: row;
 
-    animation: ${fadeIn} 1s ease;
+    ${({ onFadeOut }) =>
+        onFadeOut
+            ? css`
+                  animation: ${fadeOut} 1s ease;
+              `
+            : css`
+                  animation: ${fadeIn} 1s ease;
+              `}
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`
@@ -156,6 +168,7 @@ const DeleteButton = styled.div`
 
 const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
+    const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
 
     const dispatch = useDispatch();
 
@@ -168,14 +181,16 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     };
 
     const handleDelete = () => {
+        setMenuVisible(false);
+        setOnFadeOut(true);
         setTimeout(() => {
             dispatch(deleteTodo(data.id));
-        }, 500);
+        }, 1000);
     };
 
     return (
         <>
-            <Container draggable>
+            <Container draggable onFadeOut={onFadeOut}>
                 <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
                 <Textfield>{data.content}</Textfield>
                 <MenuButton onClick={() => handleMenuVisible()} />

@@ -42,8 +42,8 @@ const Todoapp: React.FC = () => {
         <>
             <Appbody>
                 <TodoTitle>TodoApp</TodoTitle>
-                <TodoToolbar />
                 <TodoInput />
+                <TodoToolbar />
                 <TodoList />
             </Appbody>
         </>

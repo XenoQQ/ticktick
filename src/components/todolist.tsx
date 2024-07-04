@@ -12,7 +12,6 @@ const TodolistContainer = styled.div`
 `;
 
 const Grouptitle = styled.div`
-    margin: 5px 0 0 0;
     padding: 0 0 0 5px;
 
     font-family: 'Ubuntu', sans-serif;
