@@ -1,11 +1,11 @@
 import React from 'react';
-import { styled, css, keyframes } from 'styled-components';
+import { styled, css } from 'styled-components';
 import { addTodo } from '../store/todoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
 import Datepicker from './datepicker';
-import IconArrowDown from '../assets/images/arrow-down.png';
+import IconArrows from '../assets/images/arrow-down.png';
 
 const InputContainer = styled.div<{ priority: string }>`
     position: relative;
@@ -57,15 +57,6 @@ const InputForm = styled.input`
     justify-content: left;
 `;
 
-const rotateBackground = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
-
 const PriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
@@ -73,14 +64,14 @@ const PriorityButton = styled.button<{ activeButton: boolean }>`
 
     margin-right: 3px;
 
-    background: no-repeat center/90% url(${IconArrowDown});
+    background: none;
     border: none;
     border-radius: 5px;
 
     align-items: center;
     justify-content: center;
 
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
@@ -88,7 +79,6 @@ const PriorityButton = styled.button<{ activeButton: boolean }>`
         activeButton
             ? css`
                   opacity: 0.7;
-                  animation: ${rotateBackground} 1s ease;
               `
             : css`
                   opacity: 1;
@@ -96,8 +86,23 @@ const PriorityButton = styled.button<{ activeButton: boolean }>`
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
+`;
+
+const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
+    width: 100%;
+    height: 100%;
+
+    transition: 0.5s ease;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  transform: rotate(-90deg);
+              `
+            : css`
+                  transform: rotate(180deg);
+              `}
 `;
 
 const PriorityMenu = styled.div`
@@ -259,7 +264,9 @@ const TodoInput: React.FC = () => {
                     onClick={() => handlePriorityMenuClick()}
                     title="Приоритет"
                     activeButton={priorityMenuVisible}
-                />
+                >
+                    <PriorityButtonImg src={IconArrows} activeButton={priorityMenuVisible} />
+                </PriorityButton>
                 {priorityMenuVisible && (
                     <PriorityMenu ref={priorityMenuRef}>
                         <PriorityMenuTitle>Приоритет</PriorityMenuTitle>

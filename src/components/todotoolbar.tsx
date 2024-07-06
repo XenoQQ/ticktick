@@ -27,7 +27,7 @@ const ToolbarButton = styled.div<{ activeButton: boolean }>`
 
     align-self: flex-end;
 
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
@@ -43,7 +43,6 @@ const ToolbarButton = styled.div<{ activeButton: boolean }>`
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 `;
 
@@ -87,7 +86,7 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
     align-items: center;
     justify-content: center;
 
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
@@ -103,7 +102,6 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 `;
 
@@ -126,13 +124,12 @@ const ToolbarOptionSubButton = styled.button`
     align-items: center;
     justify-content: center;
 
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 `;
 

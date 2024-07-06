@@ -42,7 +42,7 @@ const TodoList: React.FC = () => {
 
         switch (groupCase) {
             case 'date':
-                return groupKey('timeOfCreation');
+                return groupKey('targetDate');
             case 'priority':
                 return groupKey('priority');
             case 'tag':

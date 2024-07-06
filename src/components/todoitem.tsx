@@ -19,7 +19,7 @@ const Container = styled.div<{ onFadeOut: boolean }>`
     position: relative;
 
     display: flex;
-    height: 45px;
+    height: auto;
 
     padding: 5px;
     margin: 5px 0 0 0;
@@ -30,6 +30,7 @@ const Container = styled.div<{ onFadeOut: boolean }>`
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
+    flex-wrap: wrap;
 
     ${({ onFadeOut }) =>
         onFadeOut
@@ -39,6 +40,13 @@ const Container = styled.div<{ onFadeOut: boolean }>`
             : css`
                   animation: ${fadeIn} 1s ease;
               `}
+`;
+
+const MainInfoWrapper = styled.div`
+    display: flex;
+
+    width: 100%;
+    height: 45px;
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`
@@ -166,6 +174,57 @@ const DeleteButton = styled.div`
     border-radius: 5px;
 `;
 
+const SubInfoWrapper = styled.div`
+    display: flex;
+    width: 100%;
+    height: 24px;
+
+    margin: 5px 0 0 0%;
+
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+`;
+
+const DateWrapper = styled.div`
+    display: flex;
+    width: auto;
+    height: 18px;
+
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 14px;
+    color: #757575;
+
+    justify-content: center;
+    align-items: center;
+`;
+
+const TagsWrapper = styled.div`
+    display: flex;
+    width: auto;
+    height: 24px;
+
+    margin-left: auto;
+
+    justify-content: flex-end;
+    align-items: center;
+`;
+
+const Tag = styled.div`
+    display: flex;
+    width: auto;
+    height: 18px;
+
+    margin-right: 3px;
+
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 14px;
+    color: #757575;
+
+    justify-content: center;
+    align-items: center;
+`;
+
 const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
     const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
@@ -188,17 +247,42 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }, 1000);
     };
 
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) {
+            return '';
+        }
+
+        const date = new Date(dateString);
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${day}/${month}/${year}`;
+    };
+
     return (
         <>
             <Container draggable onFadeOut={onFadeOut}>
-                <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
-                <Textfield>{data.content}</Textfield>
-                <MenuButton onClick={() => handleMenuVisible()} />
-                {menuVisible && (
-                    <MenuContainer>
-                        <DeleteButton onClick={() => handleDelete()} />
-                    </MenuContainer>
-                )}
+                <MainInfoWrapper>
+                    <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
+                    <Textfield>{data.content}</Textfield>
+                    <MenuButton onClick={() => handleMenuVisible()} />
+                    {menuVisible && (
+                        <MenuContainer>
+                            <DeleteButton onClick={() => handleDelete()} />
+                        </MenuContainer>
+                    )}
+                </MainInfoWrapper>
+
+                <SubInfoWrapper>
+                    <DateWrapper>{formatDate(data.targetDate)}</DateWrapper>
+                    <TagsWrapper>
+                        {data.tags.map((tag) => (
+                            <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
+                        ))}
+                    </TagsWrapper>
+                </SubInfoWrapper>
             </Container>
         </>
     );

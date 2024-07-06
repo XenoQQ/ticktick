@@ -28,9 +28,12 @@ const todoSlice = createSlice({
             switch (action.payload) {
                 case 'date':
                     state.sort((a, b) => {
-                        const dateA = new Date(a.data.timeOfCreation);
-                        const dateB = new Date(b.data.timeOfCreation);
-                        return dateA.getTime() - dateB.getTime();
+                        const dateA = a.data.targetDate ? new Date(a.data.targetDate).getTime() : null;
+                        const dateB = b.data.targetDate ? new Date(b.data.targetDate).getTime() : null;
+
+                        if (dateA === null) return 1;
+                        if (dateB === null) return -1;
+                        return dateA - dateB;
                     });
                     break;
                 case 'name':

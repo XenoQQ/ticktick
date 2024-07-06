@@ -20,13 +20,12 @@ const CalendarIcon = styled.div`
 
     background: no-repeat center/100% url(${CalendarIconPng});
 
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 `;
 
