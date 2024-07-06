@@ -5,20 +5,11 @@ import 'react-datepicker/dist/react-datepicker.css';
 import CalendarIconPng from '../assets/images/calendar-icon.png';
 
 const InputDateContainer = styled.div`
+    position: relative;
+
     display: flex;
 
     align-items: center;
-`;
-
-const DatePickerWrapper = styled.div`
-    position: absolute;
-    top: 155px;
-
-    border: none;
-    background-color: transparent;
-    font-size: 16px;
-
-    cursor: pointer;
 `;
 
 const CalendarIcon = styled.div`
@@ -37,6 +28,20 @@ const CalendarIcon = styled.div`
         opacity: 0.7;
         transition: 0s;
     }
+`;
+
+const DatePickerWrapper = styled.div`
+    z-index: 100;
+
+    position: absolute;
+    top: 40px;
+    right: 10px;
+
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+
+    cursor: pointer;
 `;
 
 interface DateProps {

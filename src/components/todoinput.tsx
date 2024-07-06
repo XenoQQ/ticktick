@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled } from 'styled-components';
+import { styled, css, keyframes } from 'styled-components';
 import { addTodo } from '../store/todoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
@@ -57,7 +57,16 @@ const InputForm = styled.input`
     justify-content: left;
 `;
 
-const PriorityButton = styled.button`
+const rotateBackground = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const PriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
@@ -66,6 +75,7 @@ const PriorityButton = styled.button`
 
     background: no-repeat center/90% url(${IconArrowDown});
     border: none;
+    border-radius: 5px;
 
     align-items: center;
     justify-content: center;
@@ -73,6 +83,16 @@ const PriorityButton = styled.button`
     transition: 1s ease;
 
     cursor: pointer;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  opacity: 0.7;
+                  animation: ${rotateBackground} 1s ease;
+              `
+            : css`
+                  opacity: 1;
+              `}
 
     &:hover {
         opacity: 0.7;
@@ -133,6 +153,7 @@ const TodoInput: React.FC = () => {
 
     const inputRef = React.useRef<HTMLInputElement>(null);
     const priorityMenuRef = React.useRef<HTMLDivElement>(null);
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     const dispatch = useDispatch();
 
@@ -199,7 +220,12 @@ const TodoInput: React.FC = () => {
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-        if (priorityMenuRef.current && !priorityMenuRef.current.contains(event.target as Node)) {
+        if (
+            priorityMenuRef.current &&
+            !priorityMenuRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
             setPriorityMenuVisible(false);
         }
     };
@@ -228,7 +254,12 @@ const TodoInput: React.FC = () => {
                 />
                 <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
 
-                <PriorityButton onClick={() => handlePriorityMenuClick()} title="Приоритет" />
+                <PriorityButton
+                    ref={buttonRef}
+                    onClick={() => handlePriorityMenuClick()}
+                    title="Приоритет"
+                    activeButton={priorityMenuVisible}
+                />
                 {priorityMenuVisible && (
                     <PriorityMenu ref={priorityMenuRef}>
                         <PriorityMenuTitle>Приоритет</PriorityMenuTitle>
