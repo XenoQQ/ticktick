@@ -3,6 +3,7 @@ import { styled } from 'styled-components';
 import TodoList from './todolist';
 import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
+import TodoSettings from './todosettings';
 
 const Appbody = styled.div`
     position: absolute;
@@ -43,6 +44,7 @@ const Todoapp: React.FC = () => {
             <Appbody>
                 <TodoTitle>TodoApp</TodoTitle>
                 <TodoInput />
+                <TodoSettings />
                 <TodoToolbar />
                 <TodoList />
             </Appbody>

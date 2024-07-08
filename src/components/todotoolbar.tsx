@@ -6,6 +6,8 @@ import { sortTodos } from '../store/todoSlice';
 import { switchGroupCase } from '../store/groupSlice';
 
 const ToolbarWrapper = styled.div`
+    z-index: 100;
+
     position: relative;
 
     display: flex;
@@ -48,7 +50,7 @@ const ToolbarButton = styled.div<{ activeButton: boolean }>`
 
 const ToolbarContainer = styled.div`
     position: absolute;
-    right: -160px;
+    right: -220px;
     top: 3px;
 
     display: flex;
