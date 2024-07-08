@@ -3,7 +3,7 @@ import { TodoItemProps } from '../controls/types';
 
 const initialState: TodoItemProps[] = [];
 
-type sortCase = 'date' | 'name' | 'priority' | 'none';
+type sortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
 
 const todoSlice = createSlice({
     name: 'todos',
@@ -38,6 +38,9 @@ const todoSlice = createSlice({
                     break;
                 case 'name':
                     state.sort((a, b) => a.data.content.localeCompare(b.data.content));
+                    break;
+                case 'tag':
+                    state.sort((a, b) => a.data.tags[0].localeCompare(b.data.tags[0]));
                     break;
                 case 'priority': {
                     const priorityOrder = { high: 1, medium: 2, low: 3, none: 4 };

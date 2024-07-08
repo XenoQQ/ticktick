@@ -13,10 +13,11 @@ const TodolistContainer = styled.div`
 
 const Grouptitle = styled.div`
     padding: 0 0 0 5px;
+    margin-top: 5px;
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
-    font-size: 15px;
+    font-size: 20px;
 `;
 
 const TodoList: React.FC = () => {
@@ -64,11 +65,38 @@ const TodoList: React.FC = () => {
 
     const groupedTodos: GroupedTodos = Object.entries(groupTodos(groupSwitch));
 
+    const groupTitle = (groupOption: string, key: string) => {
+        const formatDate = (dateString: string | null) => {
+            if (!dateString) {
+                return '';
+            }
+
+            const date = new Date(dateString);
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+
+            return dateString !== 'null' ? `${day}/${month}/${year}` : 'Без даты выполнения';
+        };
+        switch (groupOption) {
+            case 'date':
+                return formatDate(key.toString());
+            case 'priority':
+                return groupKeyTranslations[key];
+            case 'tag':
+                return key;
+            case 'none':
+            default:
+                return '';
+        }
+    };
+
     return (
         <>
             {groupedTodos.map(([key, group]) => (
                 <TodolistContainer key={key}>
-                    {key && key !== 'undefined' && <Grouptitle>{groupKeyTranslations[key]}</Grouptitle>}
+                    {key && key !== 'undefined' && <Grouptitle>{groupTitle(groupSwitch, key)}</Grouptitle>}
                     {group.map((todo) => (
                         <TodoItem key={todo.key} data={todo.data} />
                     ))}

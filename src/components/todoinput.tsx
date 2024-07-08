@@ -180,6 +180,8 @@ const TodoInput: React.FC = () => {
             const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
             const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
 
+            const sortedTags = tags.sort((a, b) => a.localeCompare(b));
+
             const newTodo: TodoItemProps = {
                 key: uuidv4(),
                 data: {
@@ -187,7 +189,7 @@ const TodoInput: React.FC = () => {
                     content: contentWithoutTags,
                     priority: priority,
                     doneStatus: false,
-                    tags: tags,
+                    tags: sortedTags,
                     timeOfCreation: formatDate(new Date()).toString(),
                     timeOfCompletion: null,
                     targetDate: targetDate?.toString() ?? null,

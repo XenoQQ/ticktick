@@ -8,7 +8,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.101",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/uuidv4": "^5.0.0",
@@ -19,13 +18,12 @@
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.11",
     "styled-normalize": "^8.1.1",
-    "typescript": "^4.9.5",
     "uuidv4": "^6.2.13",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "webpack build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -49,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.6.0",
+    "@types/node": "^20.14.10",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-redux": "^7.1.33",
     "@types/react-transition-group": "^4.4.10",
@@ -67,6 +66,7 @@
     "html-webpack-plugin": "^5.6.0",
     "prettier": "^3.3.2",
     "ts-loader": "^9.5.1",
+    "typescript": "^5.5.3",
     "typescript-eslint": "^7.15.0",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",

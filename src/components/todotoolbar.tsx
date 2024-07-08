@@ -52,7 +52,7 @@ const ToolbarContainer = styled.div`
     top: 3px;
 
     display: flex;
-    width: 140px;
+    width: 200px;
     height: 65px;
     padding: 0 5px 0 5px;
 
@@ -83,8 +83,8 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
     color: #757575;
     font-size: 15px;
 
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
 
     transition: 0.5s ease;
 
@@ -177,6 +177,21 @@ const SortOptionsContainer = styled.div`
     justify-content: space-evenly;
 `;
 
+const OptionsTitle = styled.div`
+    position: relative;
+
+    display: flex;
+    width: auto;
+    height: 25px;
+
+    font-family: 'Ubuntu', sans-serif;
+    color: #75757586;
+    font-size: 15px;
+
+    justify-content: center;
+    align-items: center;
+`;
+
 type VisibleCase = 'containerVisible' | 'groupVisible' | 'sortVisible';
 
 const TodoToolbar: React.FC = () => {
@@ -230,13 +245,34 @@ const TodoToolbar: React.FC = () => {
 
     const dispatch = useDispatch();
 
-    const handleSort = (sortCase: 'date' | 'name' | 'priority' | 'none') => {
-        dispatch(sortTodos(sortCase));
-    };
+    const [groupTitle, setGroupTitle] = React.useState<string>('нет');
+    const [sortTitle, setSortTitle] = React.useState<string>('нет');
 
     const handleGroup = (groupCase: 'date' | 'priority' | 'tag' | 'none') => {
         dispatch(switchGroupCase(groupCase));
+        setGroupTitle(groupTitleMap[groupCase]);
     };
+
+    const handleSort = (sortCase: 'date' | 'name' | 'tag' | 'priority' | 'none') => {
+        dispatch(sortTodos(sortCase));
+        setSortTitle(sortTitleMap[sortCase]);
+    };
+
+    const groupTitleMap = {
+        date: 'дата',
+        priority: 'приоритет',
+        tag: 'метка',
+        none: 'нет',
+    };
+
+    const sortTitleMap = {
+        date: 'дата',
+        name: 'имя',
+        tag: 'метка',
+        priority: 'приоритет',
+        none: 'нет',
+    };
+
     return (
         <>
             <ToolbarWrapper>
@@ -248,10 +284,10 @@ const TodoToolbar: React.FC = () => {
                 {visibleCase.containerVisible && (
                     <ToolbarContainer ref={toolBarRef}>
                         <ToolbarOptionbutton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
-                            Группировать
+                            Группировать <OptionsTitle>{groupTitle}</OptionsTitle>
                         </ToolbarOptionbutton>
                         <ToolbarOptionbutton activeButton={visibleCase.sortVisible} onClick={() => handleButtonClick('sortVisible')}>
-                            Сортировать
+                            Сортировать <OptionsTitle>{sortTitle}</OptionsTitle>
                         </ToolbarOptionbutton>
                         {visibleCase.groupVisible && (
                             <GroupOptionsContainer>
@@ -265,7 +301,7 @@ const TodoToolbar: React.FC = () => {
                             <SortOptionsContainer>
                                 <ToolbarOptionSubButton onClick={() => handleSort('date')}>По дате</ToolbarOptionSubButton>
                                 <ToolbarOptionSubButton onClick={() => handleSort('name')}>По названию</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton>По метке</ToolbarOptionSubButton>
+                                <ToolbarOptionSubButton onClick={() => handleSort('tag')}>По метке</ToolbarOptionSubButton>
                                 <ToolbarOptionSubButton onClick={() => handleSort('priority')}>По приоритету</ToolbarOptionSubButton>
                                 <ToolbarOptionSubButton onClick={() => handleSort('none')}>Нет</ToolbarOptionSubButton>
                             </SortOptionsContainer>
