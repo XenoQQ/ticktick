@@ -4,7 +4,6 @@ import Iconhash from '../assets/images/icon-hash.png';
 
 const Wrapper = styled.div`
     z-index: 200;
-
     position: relative;
 
     display: flex;
@@ -62,8 +61,8 @@ const IconHash = styled.img<{ activeButton: boolean }>`
 
 const Container = styled.div`
     position: absolute;
-    right: -220px;
-    top: 3px;
+    right: -208px;
+    top: 25px;
 
     display: flex;
     width: 200px;
@@ -73,8 +72,8 @@ const Container = styled.div`
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: column;
     align-items: center;
@@ -84,17 +83,42 @@ const Container = styled.div`
 const HashtagSettings: React.FC = () => {
     const [containerVisible, setContainerVisible] = React.useState<boolean>(false);
 
+    const buttonRef = React.useRef<HTMLDivElement>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
     const handleOpenClick = () => {
         setContainerVisible((prevState) => !prevState);
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+        if (
+            containerRef.current &&
+            !containerRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setContainerVisible(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (containerVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [containerVisible]);
+
     return (
         <>
             <Wrapper>
-                <OpenButton onClick={() => handleOpenClick()} activeButton={containerVisible}>
+                <OpenButton ref={buttonRef} onClick={() => handleOpenClick()} activeButton={containerVisible}>
                     <IconHash src={Iconhash} activeButton={containerVisible} />
                 </OpenButton>
-                {containerVisible && <Container></Container>}
+                {containerVisible && <Container ref={containerRef}></Container>}
             </Wrapper>
         </>
     );

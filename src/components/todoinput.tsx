@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import Datepicker from './datepicker';
 import IconArrows from '../assets/images/arrow-down.png';
 
-const InputContainer = styled.div<{ priority: string }>`
+const Wrapper = styled.div<{ priority: string }>`
     position: relative;
 
     display: flex;
@@ -50,7 +50,7 @@ const InputContainer = styled.div<{ priority: string }>`
     transition: border-color 0.5s ease;
 `;
 
-const InputForm = styled.div`
+const InputField = styled.div`
     display: flex;
     width: 100%;
     height: 100%;
@@ -73,7 +73,7 @@ const InputForm = styled.div`
     }
 `;
 
-const PriorityButton = styled.button<{ activeButton: boolean }>`
+const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
@@ -105,7 +105,7 @@ const PriorityButton = styled.button<{ activeButton: boolean }>`
     }
 `;
 
-const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
+const OpenPriorityButtonImg = styled.img<{ activeButton: boolean }>`
     width: 100%;
     height: 100%;
 
@@ -121,21 +121,22 @@ const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
               `}
 `;
 
-const PriorityMenu = styled.div`
+const PriorityMenuContainer = styled.div`
     position: absolute;
-    right: -157px;
+    right: -150px;
     top: 50%;
     transform: translateY(-50%);
 
     display: flex;
     width: 134px;
-    height: 54px;
+    height: 100%;
 
-    padding: 0 5px 0 5px;
+    padding: 0px 5px 0 5px;
 
     background-color: #202020;
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: row;
     align-items: center;
@@ -143,7 +144,7 @@ const PriorityMenu = styled.div`
     flex-wrap: wrap;
 `;
 
-const PriorityMenuTitle = styled.div`
+const PriorityMenuContainerTitle = styled.div`
     display: flex;
     width: 100%;
 
@@ -154,14 +155,14 @@ const PriorityMenuTitle = styled.div`
     justify-content: center;
 `;
 
-const PriorityMenuButton = styled.div<{ bocolor: string }>`
+const PriorityMenuContainerButton = styled.div<{ bocolor: string }>`
     display: flex;
     width: 25px;
     height: 25px;
 
     background-color: #202020;
-    border: 3px solid ${({ bocolor }) => bocolor};
-    border-radius: 5px;
+    border: 2px solid ${({ bocolor }) => bocolor};
+    border-radius: 4px;
 
     cursor: pointer;
 `;
@@ -169,11 +170,11 @@ const PriorityMenuButton = styled.div<{ bocolor: string }>`
 const TodoInput: React.FC = () => {
     const [content, setContent] = React.useState<string>('');
     const [targetDate, setTargetDate] = React.useState<Date | null>(null);
-    const [priorityMenuVisible, setPriorityMenuVisible] = React.useState<boolean>(false);
+    const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
     const [priority, setPriority] = React.useState<'none' | 'low' | 'medium' | 'high'>('none');
 
     const inputRef = React.useRef<HTMLInputElement>(null);
-    const priorityMenuRef = React.useRef<HTMLDivElement>(null);
+    const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     const dispatch = useDispatch();
@@ -227,13 +228,13 @@ const TodoInput: React.FC = () => {
         }
     };
 
-    const handlePriorityMenuClick = () => {
-        setPriorityMenuVisible((prevstate) => !prevstate);
+    const handlePriorityMenuContainerClick = () => {
+        setPriorityMenuContainerVisible((prevstate) => !prevstate);
     };
 
     const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
         setPriority(priority);
-        setPriorityMenuVisible((prevstate) => !prevstate);
+        setPriorityMenuContainerVisible((prevstate) => !prevstate);
         inputRef.current?.focus();
     };
 
@@ -242,25 +243,25 @@ const TodoInput: React.FC = () => {
         inputRef.current?.focus();
     };
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            priorityMenuRef.current &&
-            !priorityMenuRef.current.contains(event.target as Node) &&
-            buttonRef.current &&
-            !buttonRef.current.contains(event.target as Node)
-        ) {
-            setPriorityMenuVisible(false);
-        }
-    };
-
     const handleInput = (event: React.FormEvent<HTMLDivElement>) => {
         const innerHTML = (event.target as HTMLDivElement).innerHTML;
         const highlightedContent = innerHTML.replace(/(#[\p{L}\p{N}_]+)/gu, '<span class="tag">$1</span>');
         setContent(highlightedContent);
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+        if (
+            priorityMenuContainerRef.current &&
+            !priorityMenuContainerRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setPriorityMenuContainerVisible(false);
+        }
+    };
+
     React.useEffect(() => {
-        if (priorityMenuVisible) {
+        if (priorityMenuContainerVisible) {
             document.addEventListener('mousedown', handleClickOutside);
         } else {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -268,32 +269,32 @@ const TodoInput: React.FC = () => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [priorityMenuVisible]);
+    }, [priorityMenuContainerVisible]);
 
     return (
         <>
-            <InputContainer priority={priority}>
-                <InputForm ref={inputRef} contentEditable suppressContentEditableWarning onKeyDown={handleKeyDown} onInput={handleInput} />
+            <Wrapper priority={priority}>
+                <InputField ref={inputRef} contentEditable suppressContentEditableWarning onKeyDown={handleKeyDown} onInput={handleInput} />
                 <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
 
-                <PriorityButton
+                <OpenPriorityButton
                     ref={buttonRef}
-                    onClick={() => handlePriorityMenuClick()}
+                    onClick={() => handlePriorityMenuContainerClick()}
                     title="Приоритет"
-                    activeButton={priorityMenuVisible}
+                    activeButton={priorityMenuContainerVisible}
                 >
-                    <PriorityButtonImg src={IconArrows} activeButton={priorityMenuVisible} />
-                </PriorityButton>
-                {priorityMenuVisible && (
-                    <PriorityMenu ref={priorityMenuRef}>
-                        <PriorityMenuTitle>Приоритет</PriorityMenuTitle>
-                        <PriorityMenuButton bocolor="#D52b24" onClick={() => handlePrioritySelect('high')} />
-                        <PriorityMenuButton bocolor="#FAA80C" onClick={() => handlePrioritySelect('medium')} />
-                        <PriorityMenuButton bocolor="#4772fa" onClick={() => handlePrioritySelect('low')} />
-                        <PriorityMenuButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect('none')} />
-                    </PriorityMenu>
+                    <OpenPriorityButtonImg src={IconArrows} activeButton={priorityMenuContainerVisible} />
+                </OpenPriorityButton>
+                {priorityMenuContainerVisible && (
+                    <PriorityMenuContainer ref={priorityMenuContainerRef}>
+                        <PriorityMenuContainerTitle>Приоритет</PriorityMenuContainerTitle>
+                        <PriorityMenuContainerButton bocolor="#D52b24" onClick={() => handlePrioritySelect('high')} />
+                        <PriorityMenuContainerButton bocolor="#FAA80C" onClick={() => handlePrioritySelect('medium')} />
+                        <PriorityMenuContainerButton bocolor="#4772fa" onClick={() => handlePrioritySelect('low')} />
+                        <PriorityMenuContainerButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect('none')} />
+                    </PriorityMenuContainer>
                 )}
-            </InputContainer>
+            </Wrapper>
         </>
     );
 };

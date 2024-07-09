@@ -36,7 +36,6 @@ const OpenButton = styled.div<{ activeButton: boolean }>`
     ${({ activeButton }) =>
         activeButton
             ? css`
-                  opacity: 0.7;
                   background-color: #2e2e2e;
                   box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
               `
@@ -51,8 +50,8 @@ const OpenButton = styled.div<{ activeButton: boolean }>`
 
 const Container = styled.div`
     position: absolute;
-    left: -220px;
-    top: 3px;
+    left: -210px;
+    top: 25px;
 
     display: flex;
     width: 200px;
@@ -62,23 +61,23 @@ const Container = styled.div`
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
 `;
 
-const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
+const CaseButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     width: 100%;
     height: 25px;
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
@@ -96,6 +95,7 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
             ? css`
                   opacity: 0.7;
                   background-color: #2e2e2e;
+                  box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
               `
             : css`
                   opacity: 1;
@@ -106,15 +106,30 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
     }
 `;
 
-const ToolbarOptionSubButton = styled.button`
+const CaseTitle = styled.div`
+    position: relative;
+
+    display: flex;
+    width: auto;
+    height: 25px;
+
+    font-family: 'Ubuntu', sans-serif;
+    color: #75757586;
+    font-size: 15px;
+
+    justify-content: center;
+    align-items: center;
+`;
+
+const OptionButton = styled.button`
     display: flex;
     width: 100%;
     height: 25px;
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
@@ -134,9 +149,8 @@ const ToolbarOptionSubButton = styled.button`
 
 const GroupOptionsContainer = styled.div`
     position: absolute;
-
-    left: -157px;
-    top: -3px;
+    left: -142px;
+    top: 25px;
 
     display: flex;
     width: 140px;
@@ -146,8 +160,8 @@ const GroupOptionsContainer = styled.div`
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: column;
     align-items: center;
@@ -156,9 +170,8 @@ const GroupOptionsContainer = styled.div`
 
 const SortOptionsContainer = styled.div`
     position: absolute;
-
-    left: -157px;
-    top: -3px;
+    left: -142px;
+    top: 55px;
 
     display: flex;
     width: 140px;
@@ -167,28 +180,13 @@ const SortOptionsContainer = styled.div`
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-    border: 1px solid #535353;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid #535353;
     border-radius: 3px;
 
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-`;
-
-const OptionsTitle = styled.div`
-    position: relative;
-
-    display: flex;
-    width: auto;
-    height: 25px;
-
-    font-family: 'Ubuntu', sans-serif;
-    color: #75757586;
-    font-size: 15px;
-
-    justify-content: center;
-    align-items: center;
 `;
 
 type VisibleCase = 'containerVisible' | 'groupVisible' | 'sortVisible';
@@ -282,27 +280,27 @@ const TodoToolbar: React.FC = () => {
                 />
                 {visibleCase.containerVisible && (
                     <Container ref={toolBarRef}>
-                        <ToolbarOptionbutton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
-                            Группировать <OptionsTitle>{groupTitle}</OptionsTitle>
-                        </ToolbarOptionbutton>
-                        <ToolbarOptionbutton activeButton={visibleCase.sortVisible} onClick={() => handleButtonClick('sortVisible')}>
-                            Сортировать <OptionsTitle>{sortTitle}</OptionsTitle>
-                        </ToolbarOptionbutton>
+                        <CaseButton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
+                            Группировать <CaseTitle>{groupTitle}</CaseTitle>
+                        </CaseButton>
+                        <CaseButton activeButton={visibleCase.sortVisible} onClick={() => handleButtonClick('sortVisible')}>
+                            Сортировать <CaseTitle>{sortTitle}</CaseTitle>
+                        </CaseButton>
                         {visibleCase.groupVisible && (
                             <GroupOptionsContainer>
-                                <ToolbarOptionSubButton onClick={() => handleGroup('date')}>По дате</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleGroup('tag')}>По метке</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleGroup('priority')}>По приоритету</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleGroup('none')}>Нет</ToolbarOptionSubButton>
+                                <OptionButton onClick={() => handleGroup('date')}>По дате</OptionButton>
+                                <OptionButton onClick={() => handleGroup('tag')}>По метке</OptionButton>
+                                <OptionButton onClick={() => handleGroup('priority')}>По приоритету</OptionButton>
+                                <OptionButton onClick={() => handleGroup('none')}>Нет</OptionButton>
                             </GroupOptionsContainer>
                         )}
                         {visibleCase.sortVisible && (
                             <SortOptionsContainer>
-                                <ToolbarOptionSubButton onClick={() => handleSort('date')}>По дате</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleSort('name')}>По названию</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleSort('tag')}>По метке</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleSort('priority')}>По приоритету</ToolbarOptionSubButton>
-                                <ToolbarOptionSubButton onClick={() => handleSort('none')}>Нет</ToolbarOptionSubButton>
+                                <OptionButton onClick={() => handleSort('date')}>По дате</OptionButton>
+                                <OptionButton onClick={() => handleSort('name')}>По названию</OptionButton>
+                                <OptionButton onClick={() => handleSort('tag')}>По метке</OptionButton>
+                                <OptionButton onClick={() => handleSort('priority')}>По приоритету</OptionButton>
+                                <OptionButton onClick={() => handleSort('none')}>Нет</OptionButton>
                             </SortOptionsContainer>
                         )}
                     </Container>

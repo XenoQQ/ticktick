@@ -20,6 +20,7 @@ const Appbody = styled.div`
     border: none;
     border-radius: 10px;
     background-color: #202020;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: column;
     flex-wrap: wrap;
