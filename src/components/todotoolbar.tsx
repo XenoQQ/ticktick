@@ -5,27 +5,27 @@ import { useDispatch } from 'react-redux';
 import { sortTodos } from '../store/todoSlice';
 import { switchGroupCase } from '../store/groupSlice';
 
-const ToolbarWrapper = styled.div`
+const Wrapper = styled.div`
     z-index: 100;
-
     position: relative;
 
     display: flex;
     width: 100%;
 
-    justify-content: end;
+    justify-content: start;
 `;
 
-const ToolbarButton = styled.div<{ activeButton: boolean }>`
+const OpenButton = styled.div<{ activeButton: boolean }>`
     position: relative;
+
     width: 25px;
     height: 25px;
 
     margin: 5px 0 0 0;
 
     background: no-repeat center/80% url(${IconSort});
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    border-radius: 3px;
 
     align-self: flex-end;
 
@@ -37,7 +37,8 @@ const ToolbarButton = styled.div<{ activeButton: boolean }>`
         activeButton
             ? css`
                   opacity: 0.7;
-                  background-color: #3b3b3b;
+                  background-color: #2e2e2e;
+                  box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
               `
             : css`
                   opacity: 1;
@@ -48,21 +49,21 @@ const ToolbarButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const ToolbarContainer = styled.div`
+const Container = styled.div`
     position: absolute;
-    right: -220px;
+    left: -220px;
     top: 3px;
 
     display: flex;
     width: 200px;
     height: 65px;
+
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-
-    border: 3px solid;
-    border-radius: 5px;
-    border-color: #3b3b3b;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     flex-direction: column;
     align-items: center;
@@ -71,15 +72,13 @@ const ToolbarContainer = styled.div`
 
 const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
     display: flex;
-
     width: 100%;
     height: 25px;
 
-    border: 3px solid;
-    border-radius: 5px;
-    border-color: #3b3b3b;
-
     background-color: #202020;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
@@ -96,7 +95,7 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
         activeButton
             ? css`
                   opacity: 0.7;
-                  background-color: #3b3b3b;
+                  background-color: #2e2e2e;
               `
             : css`
                   opacity: 1;
@@ -109,15 +108,13 @@ const ToolbarOptionbutton = styled.button<{ activeButton: boolean }>`
 
 const ToolbarOptionSubButton = styled.button`
     display: flex;
-
     width: 100%;
     height: 25px;
 
-    border: 3px solid;
-    border-radius: 5px;
-    border-color: #3b3b3b;
-
     background-color: #202020;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
@@ -138,7 +135,7 @@ const ToolbarOptionSubButton = styled.button`
 const GroupOptionsContainer = styled.div`
     position: absolute;
 
-    right: -157px;
+    left: -157px;
     top: -3px;
 
     display: flex;
@@ -148,9 +145,9 @@ const GroupOptionsContainer = styled.div`
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-    border: 3px solid;
-    border-radius: 5px;
-    border-color: #3b3b3b;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     flex-direction: column;
     align-items: center;
@@ -160,7 +157,7 @@ const GroupOptionsContainer = styled.div`
 const SortOptionsContainer = styled.div`
     position: absolute;
 
-    right: -157px;
+    left: -157px;
     top: -3px;
 
     display: flex;
@@ -170,9 +167,9 @@ const SortOptionsContainer = styled.div`
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-    border: 3px solid;
-    border-radius: 5px;
-    border-color: #3b3b3b;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     flex-direction: column;
     align-items: center;
@@ -277,14 +274,14 @@ const TodoToolbar: React.FC = () => {
 
     return (
         <>
-            <ToolbarWrapper>
-                <ToolbarButton
+            <Wrapper>
+                <OpenButton
                     activeButton={visibleCase.containerVisible}
                     ref={buttonRef}
                     onClick={() => handleButtonClick('containerVisible')}
                 />
                 {visibleCase.containerVisible && (
-                    <ToolbarContainer ref={toolBarRef}>
+                    <Container ref={toolBarRef}>
                         <ToolbarOptionbutton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
                             Группировать <OptionsTitle>{groupTitle}</OptionsTitle>
                         </ToolbarOptionbutton>
@@ -308,9 +305,9 @@ const TodoToolbar: React.FC = () => {
                                 <ToolbarOptionSubButton onClick={() => handleSort('none')}>Нет</ToolbarOptionSubButton>
                             </SortOptionsContainer>
                         )}
-                    </ToolbarContainer>
+                    </Container>
                 )}
-            </ToolbarWrapper>
+            </Wrapper>
         </>
     );
 };

@@ -11,8 +11,8 @@ const fadeIn = keyframes`
 `;
 
 const fadeOut = keyframes`
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+    0% { opacity: 1; }
+    100% { opacity: 0; }
 `;
 
 const Container = styled.div<{ onFadeOut: boolean }>`
@@ -24,8 +24,8 @@ const Container = styled.div<{ onFadeOut: boolean }>`
     padding: 5px;
     margin: 5px 0 0 0;
 
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    border-radius: 3px;
 
     justify-content: space-between;
     align-items: center;
@@ -56,20 +56,19 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
 
     margin-right: 10px;
 
-    border-radius: 5px;
-    border: 3px solid;
+    border: 1px solid;
+    border-radius: 3px;
     border-color: ${({ priority }) => {
         switch (priority) {
             case 'none':
-                return '#3b3b3b';
+            default:
+                return '#535353';
             case 'low':
                 return '#4772fa';
             case 'medium':
                 return '#FAA80C';
             case 'high':
                 return '#D52b24';
-            default:
-                return '#3b3b3b';
         }
     }};
 
@@ -90,19 +89,18 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         width: 16px;
         height: 27px;
         border: solid;
-        border-width: 0 4px 4px 0;
+        border-width: 0 2px 2px 0;
         border-color: ${({ priority }) => {
             switch (priority) {
                 case 'none':
-                    return '#3b3b3b';
+                default:
+                    return '#535353';
                 case 'low':
                     return '#4772fa';
                 case 'medium':
                     return '#FAA80C';
                 case 'high':
                     return '#D52b24';
-                default:
-                    return '#3b3b3b';
             }
         }};
         transform: translate(-50%, -50%) rotate(35deg);
@@ -130,8 +128,8 @@ const MenuButton = styled.div`
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
 
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    border-radius: 3px;
     background: no-repeat center/80% url(${IconMenu});
 
     transition: 1s ease;
@@ -157,8 +155,9 @@ const MenuContainer = styled.div`
     padding: 0 5px 0 5px;
 
     background-color: #202020;
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 
     flex-direction: row;
     align-items: center;
@@ -170,8 +169,9 @@ const DeleteButton = styled.div`
     width: 30px;
     height: 30px;
 
-    border: 3px solid #3b3b3b;
-    border-radius: 5px;
+    border: 1px solid #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
 `;
 
 const SubInfoWrapper = styled.div`

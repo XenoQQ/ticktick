@@ -15,20 +15,32 @@ const InputContainer = styled.div<{ priority: string }>`
 
     padding: 5px;
 
-    border: 3px solid;
-    border-radius: 5px;
+    border: 1px solid;
+    border-radius: 3px;
     border-color: ${({ priority }) => {
         switch (priority) {
             case 'none':
-                return '#3b3b3b';
+            default:
+                return '#535353';
             case 'low':
                 return '#4772fa';
             case 'medium':
                 return '#FAA80C';
             case 'high':
                 return '#D52b24';
+        }
+    }};
+    box-shadow: ${({ priority }) => {
+        switch (priority) {
+            case 'none':
             default:
-                return '#3b3b3b';
+                return '0 0 0px #535353;';
+            case 'low':
+                return '0 0 5px #4772fa, inset 0 0 5px #4772fa;';
+            case 'medium':
+                return '0 0 5px #FAA80C, inset 0 0 5px #FAA80C;';
+            case 'high':
+                return '0 0 5px #D52b24, inset 0 0 5px #D52b24;';
         }
     }};
 
@@ -38,7 +50,7 @@ const InputContainer = styled.div<{ priority: string }>`
     transition: border-color 0.5s ease;
 `;
 
-const InputForm = styled.input`
+const InputForm = styled.div`
     display: flex;
     width: 100%;
     height: 100%;
@@ -55,6 +67,10 @@ const InputForm = styled.input`
 
     align-items: center;
     justify-content: left;
+
+    span.tag {
+        color: blue;
+    }
 `;
 
 const PriorityButton = styled.button<{ activeButton: boolean }>`
@@ -237,6 +253,12 @@ const TodoInput: React.FC = () => {
         }
     };
 
+    const handleInput = (event: React.FormEvent<HTMLDivElement>) => {
+        const innerHTML = (event.target as HTMLDivElement).innerHTML;
+        const highlightedContent = innerHTML.replace(/(#[\p{L}\p{N}_]+)/gu, '<span class="tag">$1</span>');
+        setContent(highlightedContent);
+    };
+
     React.useEffect(() => {
         if (priorityMenuVisible) {
             document.addEventListener('mousedown', handleClickOutside);
@@ -251,14 +273,7 @@ const TodoInput: React.FC = () => {
     return (
         <>
             <InputContainer priority={priority}>
-                <InputForm
-                    ref={inputRef}
-                    type="text"
-                    value={content}
-                    placeholder="Вводить задачу сюда"
-                    onChange={(e) => setContent(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                />
+                <InputForm ref={inputRef} contentEditable suppressContentEditableWarning onKeyDown={handleKeyDown} onInput={handleInput} />
                 <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
 
                 <PriorityButton
