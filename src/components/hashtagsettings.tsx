@@ -1,6 +1,8 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
 import Iconhash from '../assets/images/icon-hash.png';
+import { RootState } from '../store/store';
+import { useSelector } from 'react-redux';
 
 const Wrapper = styled.div`
     z-index: 200;
@@ -80,11 +82,28 @@ const Container = styled.div`
     justify-content: space-evenly;
 `;
 
+const Tag = styled.div`
+    display: flex;
+    width: auto;
+    height: 18px;
+
+    margin-right: 3px;
+
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 14px;
+    color: #757575;
+
+    justify-content: center;
+    align-items: center;
+`;
+
 const HashtagSettings: React.FC = () => {
     const [containerVisible, setContainerVisible] = React.useState<boolean>(false);
 
     const buttonRef = React.useRef<HTMLDivElement>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const tags = useSelector((state: RootState) => state.hashtags);
 
     const handleOpenClick = () => {
         setContainerVisible((prevState) => !prevState);
@@ -118,7 +137,13 @@ const HashtagSettings: React.FC = () => {
                 <OpenButton ref={buttonRef} onClick={() => handleOpenClick()} activeButton={containerVisible}>
                     <IconHash src={Iconhash} activeButton={containerVisible} />
                 </OpenButton>
-                {containerVisible && <Container ref={containerRef}></Container>}
+                {containerVisible && (
+                    <Container ref={containerRef}>
+                        {tags.map((tag) => (
+                            <Tag key={tag}>{tag}</Tag>
+                        ))}
+                    </Container>
+                )}
             </Wrapper>
         </>
     );

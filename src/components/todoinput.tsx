@@ -1,6 +1,7 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
 import { addTodo } from '../store/todoSlice';
+import { addTag } from '../store/hashtagSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
@@ -50,7 +51,7 @@ const Wrapper = styled.div<{ priority: string }>`
     transition: border-color 0.5s ease;
 `;
 
-const InputField = styled.div`
+const InputField = styled.input`
     display: flex;
     width: 100%;
     height: 100%;
@@ -216,6 +217,7 @@ const TodoInput: React.FC = () => {
             };
 
             dispatch(addTodo(newTodo));
+            dispatch(addTag(sortedTags));
             setContent('');
             setPriority('none');
             setTargetDate(null);
@@ -243,12 +245,6 @@ const TodoInput: React.FC = () => {
         inputRef.current?.focus();
     };
 
-    const handleInput = (event: React.FormEvent<HTMLDivElement>) => {
-        const innerHTML = (event.target as HTMLDivElement).innerHTML;
-        const highlightedContent = innerHTML.replace(/(#[\p{L}\p{N}_]+)/gu, '<span class="tag">$1</span>');
-        setContent(highlightedContent);
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
         if (
             priorityMenuContainerRef.current &&
@@ -274,7 +270,13 @@ const TodoInput: React.FC = () => {
     return (
         <>
             <Wrapper priority={priority}>
-                <InputField ref={inputRef} contentEditable suppressContentEditableWarning onKeyDown={handleKeyDown} onInput={handleInput} />
+                <InputField
+                    ref={inputRef}
+                    onKeyDown={handleKeyDown}
+                    type="text"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                />
                 <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
 
                 <OpenPriorityButton

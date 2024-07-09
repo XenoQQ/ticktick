@@ -4,5 +4,5 @@
   "printWidth": 140,
   "tabWidth": 4,
   "useTabs": false,
-  "endOfLine": "auto"
+  "endOfLine": "lf"
 }
