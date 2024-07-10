@@ -4,6 +4,7 @@ import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
 import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
 import IconSettings from '../assets/images/icon-menu.png';
+import IconDelete from '../assets/images/icon-delete.png';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -191,11 +192,23 @@ const MenuContainer = styled.div`
 `;
 
 const DeleteButton = styled.div`
+    display: flex;
+
     width: 30px;
     height: 30px;
 
     border: 1px solid #535353;
     border-radius: 3px;
+    background: no-repeat center/80% url(${IconDelete});
+
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.7;
+    }
 `;
 
 const SubContainer = styled.div`
