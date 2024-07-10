@@ -37,6 +37,8 @@ const TodoTitle = styled.div`
 
     justify-content: center;
     align-items: center;
+
+    user-select: none;
 `;
 
 const Todoapp: React.FC = () => {

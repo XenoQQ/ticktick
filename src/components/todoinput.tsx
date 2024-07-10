@@ -49,6 +49,8 @@ const Wrapper = styled.div<{ priority: string }>`
     justify-content: space-between;
 
     transition: border-color 0.5s ease;
+
+    user-select: none;
 `;
 
 const InputField = styled.input`
@@ -102,7 +104,7 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
               `}
 
     &:hover {
-        opacity: 0.7;
+        opacity: 0.5;
     }
 `;
 

@@ -12,6 +12,8 @@ const Wrapper = styled.div`
     width: 100%;
 
     justify-content: end;
+
+    user-select: none;
 `;
 
 const OpenButton = styled.div<{ activeButton: boolean }>`

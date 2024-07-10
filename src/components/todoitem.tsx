@@ -3,7 +3,7 @@ import { styled, keyframes, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
 import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
-import IconMenu from '../assets/images/icon-menu.png';
+import IconSettings from '../assets/images/icon-menu.png';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -15,14 +15,14 @@ const fadeOut = keyframes`
     100% { opacity: 0; }
 `;
 
-const Container = styled.div<{ onFadeOut: boolean }>`
+const Wrapper = styled.div<{ onFadeOut: boolean }>`
     position: relative;
 
     display: flex;
     height: auto;
 
-    padding: 5px;
     margin: 5px 0 0 0;
+    padding: 5px;
 
     border: 1px solid #535353;
     border-radius: 3px;
@@ -42,16 +42,19 @@ const Container = styled.div<{ onFadeOut: boolean }>`
               `}
 `;
 
-const MainInfoWrapper = styled.div`
+const MainContainer = styled.div`
     display: flex;
 
     width: 100%;
-    height: 45px;
+    height: 35px;
+
+    justify-content: center;
+    align-items: center;
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     display: flex;
-    height: calc(100% - 6px);
+    height: 35px;
     aspect-ratio: 1/1;
 
     margin-right: 10px;
@@ -86,8 +89,8 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         position: relative;
         top: 40%;
         left: 50%;
-        width: 16px;
-        height: 27px;
+        width: 12px;
+        height: 23px;
         border: solid;
         border-width: 0 2px 2px 0;
         border-color: ${({ priority }) => {
@@ -124,29 +127,51 @@ const Textfield = styled.div`
     align-items: center;
 `;
 
-const MenuButton = styled.div`
-    height: calc(100% - 6px);
+const MenuButton = styled.div<{ activeButton: boolean }>`
+    height: 25px;
     aspect-ratio: 1/1;
 
-    border: 1px solid #535353;
-    border-radius: 3px;
-    background: no-repeat center/80% url(${IconMenu});
-
-    transition: 1s ease;
+    transition: 0.5s ease;
 
     cursor: pointer;
 
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  background-color: #2e2e2e;
+                  box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
+              `
+            : css`
+                  background-color: none;
+              `}
+
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 `;
 
+const MenuButtonImg = styled.img<{ activeButton: boolean }>`
+    width: 100%;
+    height: 100%;
+
+    transition: 0.5s ease;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  transform: rotate(-90deg);
+              `
+            : css`
+                  transform: rotate(180deg);
+              `}
+`;
+
 const MenuContainer = styled.div`
+    z-index: 9999;
+
     position: absolute;
-    right: -157px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: -140px;
+    top: 30px;
 
     display: flex;
     width: 134px;
@@ -156,8 +181,8 @@ const MenuContainer = styled.div`
 
     background-color: #202020;
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 
     flex-direction: row;
     align-items: center;
@@ -170,11 +195,10 @@ const DeleteButton = styled.div`
     height: 30px;
 
     border: 1px solid #535353;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     border-radius: 3px;
 `;
 
-const SubInfoWrapper = styled.div`
+const SubContainer = styled.div`
     display: flex;
     width: 100%;
     height: 24px;
@@ -186,7 +210,7 @@ const SubInfoWrapper = styled.div`
     align-items: center;
 `;
 
-const DateWrapper = styled.div`
+const DateContainer = styled.div`
     display: flex;
     width: auto;
     height: 18px;
@@ -199,7 +223,7 @@ const DateWrapper = styled.div`
     align-items: center;
 `;
 
-const TagsWrapper = styled.div`
+const TagsContainer = styled.div`
     display: flex;
     width: auto;
     height: 24px;
@@ -229,14 +253,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
     const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
 
+    const menuContainerRef = React.useRef<HTMLDivElement>(null);
+    const menuButtonRef = React.useRef<HTMLDivElement>(null);
+
     const dispatch = useDispatch();
 
     const handleComplete = () => {
         dispatch(toggleDoneStatus(data.id));
-    };
-
-    const handleMenuVisible = () => {
-        setMenuVisible((prevstate) => !prevstate);
     };
 
     const handleDelete = () => {
@@ -261,29 +284,56 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         return `${day}/${month}/${year}`;
     };
 
+    const handleMenuVisible = () => {
+        setMenuVisible((prevstate) => !prevstate);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (
+            menuContainerRef.current &&
+            !menuContainerRef.current.contains(event.target as Node) &&
+            menuButtonRef.current &&
+            !menuButtonRef.current.contains(event.target as Node)
+        ) {
+            setMenuVisible(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (menuVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuVisible]);
+
     return (
         <>
-            <Container draggable onFadeOut={onFadeOut}>
-                <MainInfoWrapper>
+            <Wrapper draggable onFadeOut={onFadeOut}>
+                <MainContainer>
                     <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield>{data.content}</Textfield>
-                    <MenuButton onClick={() => handleMenuVisible()} />
+                    <MenuButton onClick={() => handleMenuVisible()} activeButton={menuVisible} ref={menuButtonRef}>
+                        <MenuButtonImg src={IconSettings} activeButton={menuVisible} />
+                    </MenuButton>
                     {menuVisible && (
-                        <MenuContainer>
+                        <MenuContainer ref={menuContainerRef}>
                             <DeleteButton onClick={() => handleDelete()} />
                         </MenuContainer>
                     )}
-                </MainInfoWrapper>
-
-                <SubInfoWrapper>
-                    <DateWrapper>{formatDate(data.targetDate)}</DateWrapper>
-                    <TagsWrapper>
+                </MainContainer>
+                <SubContainer>
+                    <DateContainer>{formatDate(data.targetDate)}</DateContainer>
+                    <TagsContainer>
                         {data.tags.map((tag) => (
                             <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
                         ))}
-                    </TagsWrapper>
-                </SubInfoWrapper>
-            </Container>
+                    </TagsContainer>
+                </SubContainer>
+            </Wrapper>
         </>
     );
 };

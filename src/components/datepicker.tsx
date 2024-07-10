@@ -1,15 +1,22 @@
 import React from 'react';
 import { styled } from 'styled-components';
-import DatePicker from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { ru } from 'date-fns/locale';
+import { DateProps } from '../controls/types';
 import 'react-datepicker/dist/react-datepicker.css';
+import './styles/datepicker-custom.css';
 import CalendarIconPng from '../assets/images/calendar-icon.png';
 
-const InputDateContainer = styled.div`
+registerLocale('ru', ru);
+
+const Wrapper = styled.div`
     position: relative;
 
     display: flex;
 
     align-items: center;
+
+    user-select: none;
 `;
 
 const CalendarIcon = styled.div`
@@ -30,7 +37,7 @@ const CalendarIcon = styled.div`
 `;
 
 const DatePickerWrapper = styled.div`
-    z-index: 100;
+    z-index: 9999;
 
     position: absolute;
     top: 40px;
@@ -38,15 +45,11 @@ const DatePickerWrapper = styled.div`
 
     border: none;
     background-color: transparent;
+
     font-size: 16px;
 
     cursor: pointer;
 `;
-
-interface DateProps {
-    onChange?: (date: Date | null) => void;
-    value?: Date | null;
-}
 
 const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
     const [currentDate, setCurrentDate] = React.useState<Date | null>(value || null);
@@ -86,14 +89,21 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
 
     return (
         <>
-            <InputDateContainer ref={wrapperRef}>
+            <Wrapper ref={wrapperRef}>
                 <CalendarIcon onClick={() => handleClick()} title="Выбрать дату выполнения" />
                 {calendarVisible && (
                     <DatePickerWrapper>
-                        <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/MM/yyyy" inline />
+                        <DatePicker
+                            id="date-picker"
+                            selected={currentDate}
+                            onChange={handleChange}
+                            dateFormat="dd/MM/yyyy"
+                            inline
+                            locale="ru"
+                        />
                     </DatePickerWrapper>
                 )}
-            </InputDateContainer>
+            </Wrapper>
         </>
     );
 };

@@ -1,9 +1,10 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
-import IconSort from '../assets/images/icon-sort.png';
 import { useDispatch } from 'react-redux';
 import { sortTodos } from '../store/todoSlice';
 import { switchGroupCase } from '../store/groupSlice';
+import { TitleMap, VisibleCase, VisibleCaseState, SortCase, GroupCase } from '../controls/types';
+import IconSort from '../assets/images/icon-sort.png';
 
 const Wrapper = styled.div`
     z-index: 100;
@@ -13,6 +14,8 @@ const Wrapper = styled.div`
     width: 100%;
 
     justify-content: start;
+
+    user-select: none;
 `;
 
 const OpenButton = styled.div<{ activeButton: boolean }>`
@@ -48,7 +51,7 @@ const OpenButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const Container = styled.div`
+const CaseContainer = styled.div`
     position: absolute;
     left: -210px;
     top: 25px;
@@ -121,6 +124,48 @@ const CaseTitle = styled.div`
     align-items: center;
 `;
 
+const GroupContainer = styled.div`
+    position: absolute;
+    left: -142px;
+    top: 25px;
+
+    display: flex;
+    width: 140px;
+    height: 125px;
+
+    padding: 0 5px 0 5px;
+
+    background-color: #202020;
+    border: 1px solid #535353;
+    border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+`;
+
+const SortContainer = styled.div`
+    position: absolute;
+    left: -142px;
+    top: 55px;
+
+    display: flex;
+    width: 140px;
+    height: 155px;
+
+    padding: 0 5px 0 5px;
+
+    background-color: #202020;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid #535353;
+    border-radius: 3px;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+`;
+
 const OptionButton = styled.button`
     display: flex;
     width: 100%;
@@ -147,53 +192,17 @@ const OptionButton = styled.button`
     }
 `;
 
-const GroupOptionsContainer = styled.div`
-    position: absolute;
-    left: -142px;
-    top: 25px;
-
-    display: flex;
-    width: 140px;
-    height: 125px;
-
-    padding: 0 5px 0 5px;
-
-    background-color: #202020;
-    border: 1px solid #535353;
-    border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-`;
-
-const SortOptionsContainer = styled.div`
-    position: absolute;
-    left: -142px;
-    top: 55px;
-
-    display: flex;
-    width: 140px;
-    height: 155px;
-
-    padding: 0 5px 0 5px;
-
-    background-color: #202020;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-    border: 1px solid #535353;
-    border-radius: 3px;
-
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-`;
-
-type VisibleCase = 'containerVisible' | 'groupVisible' | 'sortVisible';
-
 const TodoToolbar: React.FC = () => {
-    const [visibleCase, setVisibleCase] = React.useState({
-        containerVisible: false,
+    const [groupTitle, setGroupTitle] = React.useState<string>('нет');
+    const [sortTitle, setSortTitle] = React.useState<string>('нет');
+
+    const toolBarRef = React.useRef<HTMLDivElement>(null);
+    const buttonRef = React.useRef<HTMLDivElement>(null);
+
+    const dispatch = useDispatch();
+
+    const [visibleCase, setVisibleCase] = React.useState<VisibleCaseState>({
+        CaseContainerVisible: false,
         groupVisible: false,
         sortVisible: false,
     });
@@ -201,18 +210,15 @@ const TodoToolbar: React.FC = () => {
     const handleButtonClick = (caseName: VisibleCase) => {
         setVisibleCase((prevstate) => {
             const newState = { ...prevstate, groupVisible: false, sortVisible: false };
-            if (caseName === 'containerVisible') {
-                newState.containerVisible = !prevstate.containerVisible;
+            if (caseName === 'CaseContainerVisible') {
+                newState.CaseContainerVisible = !prevstate.CaseContainerVisible;
             } else {
-                newState.containerVisible = true;
+                newState.CaseContainerVisible = true;
                 newState[caseName] = !prevstate[caseName];
             }
             return newState;
         });
     };
-
-    const toolBarRef = React.useRef<HTMLDivElement>(null);
-    const buttonRef = React.useRef<HTMLDivElement>(null);
 
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -222,7 +228,7 @@ const TodoToolbar: React.FC = () => {
             !buttonRef.current.contains(event.target as Node)
         ) {
             setVisibleCase({
-                containerVisible: false,
+                CaseContainerVisible: false,
                 sortVisible: false,
                 groupVisible: false,
             });
@@ -230,7 +236,7 @@ const TodoToolbar: React.FC = () => {
     };
 
     React.useEffect(() => {
-        if (visibleCase.containerVisible) {
+        if (visibleCase.CaseContainerVisible) {
             document.addEventListener('mousedown', handleClickOutside);
         } else {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -238,31 +244,34 @@ const TodoToolbar: React.FC = () => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [visibleCase.containerVisible]);
+    }, [visibleCase.CaseContainerVisible]);
 
-    const dispatch = useDispatch();
-
-    const [groupTitle, setGroupTitle] = React.useState<string>('нет');
-    const [sortTitle, setSortTitle] = React.useState<string>('нет');
-
-    const handleGroup = (groupCase: 'date' | 'priority' | 'tag' | 'none') => {
+    const handleGroup = (groupCase: GroupCase) => {
         dispatch(switchGroupCase(groupCase));
         setGroupTitle(groupTitleMap[groupCase]);
+        setVisibleCase({
+            ...visibleCase,
+            groupVisible: false,
+        });
     };
 
-    const handleSort = (sortCase: 'date' | 'name' | 'tag' | 'priority' | 'none') => {
+    const handleSort = (sortCase: SortCase) => {
         dispatch(sortTodos(sortCase));
         setSortTitle(sortTitleMap[sortCase]);
+        setVisibleCase({
+            ...visibleCase,
+            sortVisible: false,
+        });
     };
 
-    const groupTitleMap = {
+    const groupTitleMap: TitleMap = {
         date: 'дата',
         priority: 'приоритет',
         tag: 'метка',
         none: 'нет',
     };
 
-    const sortTitleMap = {
+    const sortTitleMap: TitleMap = {
         date: 'дата',
         name: 'имя',
         tag: 'метка',
@@ -274,12 +283,12 @@ const TodoToolbar: React.FC = () => {
         <>
             <Wrapper>
                 <OpenButton
-                    activeButton={visibleCase.containerVisible}
+                    activeButton={visibleCase.CaseContainerVisible}
                     ref={buttonRef}
-                    onClick={() => handleButtonClick('containerVisible')}
+                    onClick={() => handleButtonClick('CaseContainerVisible')}
                 />
-                {visibleCase.containerVisible && (
-                    <Container ref={toolBarRef}>
+                {visibleCase.CaseContainerVisible && (
+                    <CaseContainer ref={toolBarRef}>
                         <CaseButton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
                             Группировать <CaseTitle>{groupTitle}</CaseTitle>
                         </CaseButton>
@@ -287,23 +296,23 @@ const TodoToolbar: React.FC = () => {
                             Сортировать <CaseTitle>{sortTitle}</CaseTitle>
                         </CaseButton>
                         {visibleCase.groupVisible && (
-                            <GroupOptionsContainer>
+                            <GroupContainer>
                                 <OptionButton onClick={() => handleGroup('date')}>По дате</OptionButton>
                                 <OptionButton onClick={() => handleGroup('tag')}>По метке</OptionButton>
                                 <OptionButton onClick={() => handleGroup('priority')}>По приоритету</OptionButton>
                                 <OptionButton onClick={() => handleGroup('none')}>Нет</OptionButton>
-                            </GroupOptionsContainer>
+                            </GroupContainer>
                         )}
                         {visibleCase.sortVisible && (
-                            <SortOptionsContainer>
+                            <SortContainer>
                                 <OptionButton onClick={() => handleSort('date')}>По дате</OptionButton>
                                 <OptionButton onClick={() => handleSort('name')}>По названию</OptionButton>
                                 <OptionButton onClick={() => handleSort('tag')}>По метке</OptionButton>
                                 <OptionButton onClick={() => handleSort('priority')}>По приоритету</OptionButton>
                                 <OptionButton onClick={() => handleSort('none')}>Нет</OptionButton>
-                            </SortOptionsContainer>
+                            </SortContainer>
                         )}
-                    </Container>
+                    </CaseContainer>
                 )}
             </Wrapper>
         </>
