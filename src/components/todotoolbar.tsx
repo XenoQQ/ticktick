@@ -1,10 +1,14 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { sortTodos } from '../store/todoSlice';
 import { switchGroupCase } from '../store/groupSlice';
 import { TitleMap, VisibleCase, VisibleCaseState, SortCase, GroupCase } from '../controls/types';
 import IconSort from '../assets/images/icon-sort.png';
+import IconShow from '../assets/images/icon-show.png';
+import IconHide from '../assets/images/icon-hide.png';
+import { RootState } from '../store/store';
+import { switchShow } from '../store/showSlice';
 
 const Wrapper = styled.div`
     z-index: 100;
@@ -16,6 +20,38 @@ const Wrapper = styled.div`
     justify-content: end;
 
     user-select: none;
+`;
+
+const ShowButton = styled.div<{ activeButton: boolean }>`
+    position: relative;
+    right: 34px;
+
+    width: 25px;
+    height: 25px;
+
+    margin: 5px 0 0 0;
+
+    border: 1px solid #535353;
+    border-radius: 3px;
+
+    align-self: flex-end;
+
+    transition: 0.5s ease;
+
+    cursor: pointer;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  background: no-repeat center/80% url(${IconShow});
+              `
+            : css`
+                  background: no-repeat center/80% url(${IconHide});
+              `}
+
+    &:hover {
+        opacity: 0.7;
+    }
 `;
 
 const OpenButton = styled.div<{ activeButton: boolean }>`
@@ -195,6 +231,8 @@ const TodoToolbar: React.FC = () => {
     const toolBarRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLDivElement>(null);
 
+    const showSub = useSelector((state: RootState) => state.showSub);
+
     const dispatch = useDispatch();
 
     const [visibleCase, setVisibleCase] = React.useState<VisibleCaseState>({
@@ -275,9 +313,14 @@ const TodoToolbar: React.FC = () => {
         none: 'Дата добавления',
     };
 
+    const handleShowClick = () => {
+        dispatch(switchShow());
+    };
+
     return (
         <>
             <Wrapper>
+                <ShowButton activeButton={showSub} onClick={() => handleShowClick()} />
                 <OpenButton
                     activeButton={visibleCase.CaseContainerVisible}
                     ref={buttonRef}

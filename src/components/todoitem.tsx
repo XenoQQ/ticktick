@@ -1,7 +1,8 @@
 import React from 'react';
 import { styled, keyframes, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
@@ -49,6 +50,8 @@ const MainContainer = styled.div`
 
     width: 100%;
     height: 35px;
+
+    margin: 0 0 5px 0;
 
     justify-content: center;
     align-items: center;
@@ -270,8 +273,6 @@ const SubContainer = styled.div`
     width: 100%;
     height: 24px;
 
-    margin: 5px 0 0 0%;
-
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
@@ -325,6 +326,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const OpenMenuButtonRef = React.useRef<HTMLDivElement>(null);
     const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
     const priorityMenuButtonRef = React.useRef<HTMLDivElement>(null);
+
+    const showSub = useSelector((state: RootState) => state.showSub);
 
     const dispatch = useDispatch();
 
@@ -435,14 +438,16 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                         </>
                     )}
                 </MainContainer>
-                <SubContainer>
-                    <DateContainer>{formatDate(data.targetDate)}</DateContainer>
-                    <TagsContainer>
-                        {data.tags.map((tag) => (
-                            <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
-                        ))}
-                    </TagsContainer>
-                </SubContainer>
+                {showSub && (
+                    <SubContainer>
+                        <DateContainer>{formatDate(data.targetDate)}</DateContainer>
+                        <TagsContainer>
+                            {data.tags.map((tag) => (
+                                <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
+                            ))}
+                        </TagsContainer>
+                    </SubContainer>
+                )}
             </Wrapper>
         </>
     );
