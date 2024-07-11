@@ -41,7 +41,7 @@ const DatePickerWrapper = styled.div`
 
     position: absolute;
     top: 40px;
-    right: 10px;
+    right: -200px;
 
     border: none;
     background-color: transparent;

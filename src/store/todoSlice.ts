@@ -49,6 +49,15 @@ const todoSlice = createSlice({
                 }
                 case 'none':
                 default:
+                    state.sort((a, b) => {
+                        const dateA = a.data.timeOfCreation ? new Date(a.data.timeOfCreation).getTime() : null;
+                        const dateB = b.data.timeOfCreation ? new Date(b.data.timeOfCreation).getTime() : null;
+
+                        if (dateA === null) return 1;
+                        if (dateB === null) return -1;
+                        return dateA - dateB;
+                    });
+                    break;
                     break;
             }
         },

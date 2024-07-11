@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 const Wrapper = styled.div`
     z-index: 200;
     position: relative;
+    right: 30px;
 
     display: flex;
     width: 100%;

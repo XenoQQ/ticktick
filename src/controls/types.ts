@@ -31,6 +31,13 @@ export interface DateProps {
     value?: Date | null;
 }
 
+//prioritymenu.tsx
+
+export interface PriorityMenuProps {
+    onSelect: (priority: 'none' | 'low' | 'medium' | 'high') => void;
+    onClose: () => void;
+}
+
 // Todotoolbar.tsx
 
 export interface TitleMap {

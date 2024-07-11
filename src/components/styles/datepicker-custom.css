@@ -6,16 +6,17 @@
     border: 1px solid #535353;
     border-radius: 3px;
     color: #535353;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .react-datepicker__header {
-    background-color: #2e2e2e;
+    background-color: #202020;
     border-bottom: 1px solid #535353;
 }
 
 .react-datepicker__current-month,
 .react-datepicker__day-name {
-    color: #ffffff;
+    color: #757575;
 }
 
 .react-datepicker__day {
@@ -25,7 +26,7 @@
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected {
     background-color: #3a3a3a;
-    color: #ffffff;
+    color: #757575;
 }
 
 .react-datepicker__day--outside-month {

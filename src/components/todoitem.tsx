@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux';
 import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
+import IconArrows from '../assets/images/arrow-down.png';
+import PriorityMenu from './prioritymenu';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -25,8 +27,7 @@ const Wrapper = styled.div<{ onFadeOut: boolean }>`
     margin: 5px 0 0 0;
     padding: 5px;
 
-    border: 1px solid #535353;
-    border-radius: 3px;
+    border-bottom: 1px solid #535353;
 
     justify-content: space-between;
     align-items: center;
@@ -90,8 +91,8 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         position: relative;
         top: 40%;
         left: 50%;
-        width: 12px;
-        height: 23px;
+        width: 13px;
+        height: 24px;
         border: solid;
         border-width: 0 2px 2px 0;
         border-color: ${({ priority }) => {
@@ -128,7 +129,7 @@ const Textfield = styled.div`
     align-items: center;
 `;
 
-const MenuButton = styled.div<{ activeButton: boolean }>`
+const OpenMenuButton = styled.div<{ activeButton: boolean }>`
     height: 25px;
     aspect-ratio: 1/1;
 
@@ -151,7 +152,7 @@ const MenuButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const MenuButtonImg = styled.img<{ activeButton: boolean }>`
+const OpenMenuButtonImg = styled.img<{ activeButton: boolean }>`
     width: 100%;
     height: 100%;
 
@@ -171,14 +172,14 @@ const MenuContainer = styled.div`
     z-index: 9999;
 
     position: absolute;
-    right: -140px;
+    right: -70px;
     top: 30px;
 
     display: flex;
-    width: 134px;
-    height: 54px;
+    width: auto;
+    height: auto;
 
-    padding: 0 5px 0 5px;
+    padding: 5px;
 
     background-color: #202020;
     border: 1px solid #535353;
@@ -191,11 +192,64 @@ const MenuContainer = styled.div`
     flex-wrap: wrap;
 `;
 
+const PriorityButton = styled.div<{ activeButton: boolean }>`
+    display: flex;
+
+    width: 30px;
+    height: 30px;
+
+    border: 1px solid #535353;
+    border-radius: 3px;
+
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  background-color: #2e2e2e;
+                  box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
+              `
+            : css`
+                  background-color: none;
+              `}
+
+    &:hover {
+        opacity: 0.7;
+    }
+`;
+
+const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
+    width: 70%;
+    height: 90%;
+
+    transition: 0.5s ease;
+
+    ${({ activeButton }) =>
+        activeButton
+            ? css`
+                  transform: rotate(-90deg);
+              `
+            : css`
+                  transform: rotate(180deg);
+              `}
+`;
+
+const PriorityMenuWrapper = styled.div`
+    position: absolute;
+    top: 60px;
+    right: -20px;
+`;
+
 const DeleteButton = styled.div`
     display: flex;
 
     width: 30px;
     height: 30px;
+
+    margin-left: 5px;
 
     border: 1px solid #535353;
     border-radius: 3px;
@@ -265,15 +319,20 @@ const Tag = styled.div`
 const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
     const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
+    const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
 
     const menuContainerRef = React.useRef<HTMLDivElement>(null);
-    const menuButtonRef = React.useRef<HTMLDivElement>(null);
+    const OpenMenuButtonRef = React.useRef<HTMLDivElement>(null);
+    const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
+    const priorityMenuButtonRef = React.useRef<HTMLDivElement>(null);
 
     const dispatch = useDispatch();
 
     const handleComplete = () => {
         dispatch(toggleDoneStatus(data.id));
     };
+
+    const handlePrioritySelect = () => {};
 
     const handleDelete = () => {
         setMenuVisible(false);
@@ -297,18 +356,23 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         return `${day}/${month}/${year}`;
     };
 
-    const handleMenuVisible = () => {
-        setMenuVisible((prevstate) => !prevstate);
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
         if (
             menuContainerRef.current &&
             !menuContainerRef.current.contains(event.target as Node) &&
-            menuButtonRef.current &&
-            !menuButtonRef.current.contains(event.target as Node)
+            OpenMenuButtonRef.current &&
+            !OpenMenuButtonRef.current.contains(event.target as Node)
         ) {
             setMenuVisible(false);
+        }
+
+        if (
+            priorityMenuContainerRef.current &&
+            !priorityMenuContainerRef.current.contains(event.target as Node) &&
+            priorityMenuButtonRef.current &&
+            !priorityMenuButtonRef.current.contains(event.target as Node)
+        ) {
+            setPriorityMenuContainerVisible(false);
         }
     };
 
@@ -323,19 +387,52 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         };
     }, [menuVisible]);
 
+    React.useEffect(() => {
+        if (priorityMenuContainerVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [priorityMenuContainerVisible]);
+
     return (
         <>
             <Wrapper draggable onFadeOut={onFadeOut}>
                 <MainContainer>
                     <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield>{data.content}</Textfield>
-                    <MenuButton onClick={() => handleMenuVisible()} activeButton={menuVisible} ref={menuButtonRef}>
-                        <MenuButtonImg src={IconSettings} activeButton={menuVisible} />
-                    </MenuButton>
+                    <OpenMenuButton
+                        onClick={() => setMenuVisible((prevstate) => !prevstate)}
+                        activeButton={menuVisible}
+                        ref={OpenMenuButtonRef}
+                    >
+                        <OpenMenuButtonImg src={IconSettings} activeButton={menuVisible} />
+                    </OpenMenuButton>
                     {menuVisible && (
-                        <MenuContainer ref={menuContainerRef}>
-                            <DeleteButton onClick={() => handleDelete()} />
-                        </MenuContainer>
+                        <>
+                            <MenuContainer ref={menuContainerRef}>
+                                <PriorityButton
+                                    activeButton={priorityMenuContainerVisible}
+                                    onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
+                                    ref={priorityMenuButtonRef}
+                                >
+                                    <PriorityButtonImg activeButton={priorityMenuContainerVisible} src={IconArrows} />
+                                </PriorityButton>
+                                <DeleteButton onClick={() => handleDelete()} />
+                            </MenuContainer>
+                            {priorityMenuContainerVisible && (
+                                <PriorityMenuWrapper>
+                                    <PriorityMenu
+                                        ref={priorityMenuContainerRef}
+                                        onSelect={handlePrioritySelect}
+                                        onClose={() => setPriorityMenuContainerVisible(false)}
+                                    />
+                                </PriorityMenuWrapper>
+                            )}
+                        </>
                     )}
                 </MainContainer>
                 <SubContainer>

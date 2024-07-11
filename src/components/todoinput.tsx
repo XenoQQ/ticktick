@@ -6,16 +6,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
 import Datepicker from './datepicker';
+import PriorityMenu from './prioritymenu';
 import IconArrows from '../assets/images/arrow-down.png';
 
 const Wrapper = styled.div<{ priority: string }>`
     position: relative;
-
     display: flex;
     height: 45px;
-
     padding: 5px;
-
     border: 1px solid;
     border-radius: 3px;
     border-color: ${({ priority }) => {
@@ -44,12 +42,9 @@ const Wrapper = styled.div<{ priority: string }>`
                 return '0 0 5px #D52b24, inset 0 0 5px #D52b24;';
         }
     }};
-
     align-items: center;
     justify-content: space-between;
-
     transition: border-color 0.5s ease;
-
     user-select: none;
 `;
 
@@ -57,20 +52,15 @@ const InputField = styled.input`
     display: flex;
     width: 100%;
     height: 100%;
-
     padding: 0 0 0 10px;
-
     font-family: 'Ubuntu', sans-serif;
     font-size: 25px;
     color: #dfdfdf;
-
     background-color: #202020;
     border: none;
     outline: none;
-
     align-items: center;
     justify-content: left;
-
     span.tag {
         color: blue;
     }
@@ -80,20 +70,14 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
-
     margin-right: 3px;
-
     background: none;
     border: none;
     border-radius: 5px;
-
     align-items: center;
     justify-content: center;
-
     transition: 0.5s ease;
-
     cursor: pointer;
-
     ${({ activeButton }) =>
         activeButton
             ? css`
@@ -102,7 +86,6 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
             : css`
                   opacity: 1;
               `}
-
     &:hover {
         opacity: 0.5;
     }
@@ -111,9 +94,7 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
 const OpenPriorityButtonImg = styled.img<{ activeButton: boolean }>`
     width: 100%;
     height: 100%;
-
     transition: 0.5s ease;
-
     ${({ activeButton }) =>
         activeButton
             ? css`
@@ -124,50 +105,10 @@ const OpenPriorityButtonImg = styled.img<{ activeButton: boolean }>`
               `}
 `;
 
-const PriorityMenuContainer = styled.div`
+const PriorityMenuWrapper = styled.div`
     position: absolute;
-    right: -150px;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: flex;
-    width: 134px;
-    height: 100%;
-
-    padding: 0px 5px 0 5px;
-
-    background-color: #202020;
-    border: 1px solid #535353;
-    border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-`;
-
-const PriorityMenuContainerTitle = styled.div`
-    display: flex;
-    width: 100%;
-
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 15px;
-    color: #757575;
-
-    justify-content: center;
-`;
-
-const PriorityMenuContainerButton = styled.div<{ bocolor: string }>`
-    display: flex;
-    width: 25px;
-    height: 25px;
-
-    background-color: #202020;
-    border: 2px solid ${({ bocolor }) => bocolor};
-    border-radius: 4px;
-
-    cursor: pointer;
+    right: -5px;
+    top: -1px;
 `;
 
 const TodoInput: React.FC = () => {
@@ -184,19 +125,6 @@ const TodoInput: React.FC = () => {
 
     const handleAddTodo = () => {
         if (content) {
-            const formatDate = (currentDate: Date) => {
-                let dd = currentDate.getDate();
-                if (dd < 10) dd = 0 + dd;
-
-                let mm = currentDate.getMonth() + 1;
-                if (mm < 10) mm = 0 + mm;
-
-                let yy = currentDate.getFullYear() % 100;
-                if (yy < 10) yy = 0 + yy;
-
-                return dd + '.' + mm + '.' + yy;
-            };
-
             const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
             const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
 
@@ -210,7 +138,7 @@ const TodoInput: React.FC = () => {
                     priority: priority,
                     doneStatus: false,
                     tags: sortedTags,
-                    timeOfCreation: formatDate(new Date()).toString(),
+                    timeOfCreation: new Date().toString(),
                     timeOfCompletion: null,
                     targetDate: targetDate?.toString() ?? null,
                     type: 'parent',
@@ -232,13 +160,9 @@ const TodoInput: React.FC = () => {
         }
     };
 
-    const handlePriorityMenuContainerClick = () => {
-        setPriorityMenuContainerVisible((prevstate) => !prevstate);
-    };
-
     const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
         setPriority(priority);
-        setPriorityMenuContainerVisible((prevstate) => !prevstate);
+        setPriorityMenuContainerVisible(false);
         inputRef.current?.focus();
     };
 
@@ -270,36 +194,28 @@ const TodoInput: React.FC = () => {
     }, [priorityMenuContainerVisible]);
 
     return (
-        <>
-            <Wrapper priority={priority}>
-                <InputField
-                    ref={inputRef}
-                    onKeyDown={handleKeyDown}
-                    type="text"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
-                <Datepicker value={targetDate} onChange={(date) => handleDateSelect(date)} />
+        <Wrapper priority={priority}>
+            <InputField ref={inputRef} onKeyDown={handleKeyDown} type="text" value={content} onChange={(e) => setContent(e.target.value)} />
+            <Datepicker value={targetDate} onChange={handleDateSelect} />
 
-                <OpenPriorityButton
-                    ref={buttonRef}
-                    onClick={() => handlePriorityMenuContainerClick()}
-                    title="Приоритет"
-                    activeButton={priorityMenuContainerVisible}
-                >
-                    <OpenPriorityButtonImg src={IconArrows} activeButton={priorityMenuContainerVisible} />
-                </OpenPriorityButton>
-                {priorityMenuContainerVisible && (
-                    <PriorityMenuContainer ref={priorityMenuContainerRef}>
-                        <PriorityMenuContainerTitle>Приоритет</PriorityMenuContainerTitle>
-                        <PriorityMenuContainerButton bocolor="#D52b24" onClick={() => handlePrioritySelect('high')} />
-                        <PriorityMenuContainerButton bocolor="#FAA80C" onClick={() => handlePrioritySelect('medium')} />
-                        <PriorityMenuContainerButton bocolor="#4772fa" onClick={() => handlePrioritySelect('low')} />
-                        <PriorityMenuContainerButton bocolor="#3b3b3b" onClick={() => handlePrioritySelect('none')} />
-                    </PriorityMenuContainer>
-                )}
-            </Wrapper>
-        </>
+            <OpenPriorityButton
+                ref={buttonRef}
+                onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
+                title="Приоритет"
+                activeButton={priorityMenuContainerVisible}
+            >
+                <OpenPriorityButtonImg src={IconArrows} activeButton={priorityMenuContainerVisible} />
+            </OpenPriorityButton>
+            {priorityMenuContainerVisible && (
+                <PriorityMenuWrapper>
+                    <PriorityMenu
+                        ref={priorityMenuContainerRef}
+                        onSelect={handlePrioritySelect}
+                        onClose={() => setPriorityMenuContainerVisible(false)}
+                    />
+                </PriorityMenuWrapper>
+            )}
+        </Wrapper>
     );
 };
 
