@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = false;
+const initialState = true;
 
 const showSlice = createSlice({
     name: 'showSub',

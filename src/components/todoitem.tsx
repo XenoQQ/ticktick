@@ -3,11 +3,12 @@ import { styled, keyframes, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import { toggleDoneStatus, deleteTodo } from '../store/todoSlice';
+import { toggleDoneStatus, deleteTodo, switchPriority, switchContent } from '../store/todoSlice';
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
 import PriorityMenu from './prioritymenu';
+import Datepicker from './datepicker';
 
 const fadeIn = keyframes`
     0% { opacity: 0; }
@@ -25,15 +26,19 @@ const Wrapper = styled.div<{ onFadeOut: boolean }>`
     display: flex;
     height: auto;
 
-    margin: 5px 0 0 0;
-    padding: 5px;
+    padding: 13px;
 
-    border-bottom: 1px solid #535353;
+    border: none;
+    border-radius: 5px;
 
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
+
+    &:hover {
+        background-color: #2a2a2a;
+    }
 
     ${({ onFadeOut }) =>
         onFadeOut
@@ -43,23 +48,33 @@ const Wrapper = styled.div<{ onFadeOut: boolean }>`
             : css`
                   animation: ${fadeIn} 1s ease;
               `}
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 5px;
+        width: calc(100% - 10px); /* Оставляем место для скругления */
+        height: 1px; /* Толщина нижней границы */
+        background-color: #323232; /* Цвет нижней границы */
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
 `;
 
 const MainContainer = styled.div`
     display: flex;
 
     width: 100%;
-    height: 35px;
+    height: 15px;
 
-    margin: 0 0 5px 0;
-
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
 `;
 
 const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     display: flex;
-    height: 35px;
+    height: 15px;
     aspect-ratio: 1/1;
 
     margin-right: 10px;
@@ -80,12 +95,11 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         }
     }};
 
-    transition: 1s;
+    transition: 0.5s ease;
     cursor: pointer;
 
     &:hover {
         opacity: 0.7;
-        transition: 0s;
     }
 
     &::before {
@@ -94,8 +108,8 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         position: relative;
         top: 40%;
         left: 50%;
-        width: 13px;
-        height: 24px;
+        width: 5px;
+        height: 8px;
         border: solid;
         border-width: 0 2px 2px 0;
         border-color: ${({ priority }) => {
@@ -111,30 +125,73 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
                     return '#D52b24';
             }
         }};
-        transform: translate(-50%, -50%) rotate(35deg);
+        transform: translate(-53%, -47%) rotate(35deg);
         opacity: ${({ checked }) => (checked ? '1' : '0')};
-        transition: opacity 0.3s ease;
+        transition: 0.5s ease;
     }
 `;
 
 const Textfield = styled.div`
     display: flex;
-    width: 100%;
+    width: auto;
     height: 100%;
 
-    background-color: #202020;
+    margin: 0 10px 0 0;
+
+    background-color: transparent;
 
     font-family: 'Ubuntu', sans-serif;
-    font-size: 25px;
+    font-size: 15px;
     color: #757575;
 
     list-style: none;
     align-items: center;
+
+    outline: none;
+    &:focus {
+        outline: none;
+    }
+`;
+
+const DateContainer = styled.div`
+    display: flex;
+    width: auto;
+    height: 15px;
+
+    margin-left: auto;
+
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 12px;
+    color: #5c5c5c;
+
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+
+    &:hover {
+        color: #757575;
+    }
+
+    transition: 0.5s ease;
+`;
+
+const DatePickerWrapper = styled.div`
+    position: absolute;
+    right: 70px;
+    top: 145px;
+
+    height: 15px;
+    width: 15px;
+
+    margin-right: 3px;
 `;
 
 const OpenMenuButton = styled.div<{ activeButton: boolean }>`
-    height: 25px;
+    height: 20px;
     aspect-ratio: 1/1;
+
+    margin-left: 10px;
 
     transition: 0.5s ease;
 
@@ -241,9 +298,11 @@ const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
 `;
 
 const PriorityMenuWrapper = styled.div`
+    z-index: 9999;
+
     position: absolute;
-    top: 60px;
-    right: -20px;
+    top: 30px;
+    right: 50px;
 `;
 
 const DeleteButton = styled.div`
@@ -268,49 +327,26 @@ const DeleteButton = styled.div`
     }
 `;
 
-const SubContainer = styled.div`
-    display: flex;
-    width: 100%;
-    height: 24px;
-
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-`;
-
-const DateContainer = styled.div`
-    display: flex;
-    width: auto;
-    height: 18px;
-
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 14px;
-    color: #757575;
-
-    justify-content: center;
-    align-items: center;
-`;
-
 const TagsContainer = styled.div`
     display: flex;
-    width: auto;
-    height: 24px;
+    width: 100%;
+    height: 15px;
 
-    margin-left: auto;
+    margin-top: 10px;
 
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
 `;
 
 const Tag = styled.div`
     display: flex;
     width: auto;
-    height: 18px;
+    height: 15px;
 
     margin-right: 3px;
 
     font-family: 'Ubuntu', sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     color: #757575;
 
     justify-content: center;
@@ -321,21 +357,17 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
     const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
     const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
+    const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
 
     const menuContainerRef = React.useRef<HTMLDivElement>(null);
-    const OpenMenuButtonRef = React.useRef<HTMLDivElement>(null);
-    const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
-    const priorityMenuButtonRef = React.useRef<HTMLDivElement>(null);
+    const openMenuButtonRef = React.useRef<HTMLDivElement>(null);
+    const editableDivRef = React.useRef<HTMLDivElement>(null);
+    const dateContainerRef = React.useRef<HTMLDivElement>(null);
+    const datePickerRef = React.useRef<HTMLDivElement>(null);
 
     const showSub = useSelector((state: RootState) => state.showSub);
 
     const dispatch = useDispatch();
-
-    const handleComplete = () => {
-        dispatch(toggleDoneStatus(data.id));
-    };
-
-    const handlePrioritySelect = () => {};
 
     const handleDelete = () => {
         setMenuVisible(false);
@@ -347,7 +379,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) {
-            return '';
+            return 'Без даты';
         }
 
         const date = new Date(dateString);
@@ -363,19 +395,20 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         if (
             menuContainerRef.current &&
             !menuContainerRef.current.contains(event.target as Node) &&
-            OpenMenuButtonRef.current &&
-            !OpenMenuButtonRef.current.contains(event.target as Node)
+            openMenuButtonRef.current &&
+            !openMenuButtonRef.current.contains(event.target as Node)
         ) {
             setMenuVisible(false);
+            setPriorityMenuContainerVisible(false);
         }
 
         if (
-            priorityMenuContainerRef.current &&
-            !priorityMenuContainerRef.current.contains(event.target as Node) &&
-            priorityMenuButtonRef.current &&
-            !priorityMenuButtonRef.current.contains(event.target as Node)
+            dateContainerRef.current &&
+            !dateContainerRef.current.contains(event.target as Node) &&
+            datePickerRef.current &&
+            !datePickerRef.current.contains(event.target as Node)
         ) {
-            setPriorityMenuContainerVisible(false);
+            setCalendarVisible(false);
         }
     };
 
@@ -391,7 +424,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     }, [menuVisible]);
 
     React.useEffect(() => {
-        if (priorityMenuContainerVisible) {
+        if (calendarVisible) {
             document.addEventListener('mousedown', handleClickOutside);
         } else {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -399,18 +432,60 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [priorityMenuContainerVisible]);
+    }, [calendarVisible]);
+
+    const handleComplete = () => {
+        dispatch(toggleDoneStatus(data.id));
+    };
+
+    const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
+        dispatch(switchPriority({ id: data.id, priority }));
+    };
+
+    const handleContentChange = (event?: React.FocusEvent<HTMLDivElement>) => {
+        const updatedContent = event?.currentTarget.textContent || editableDivRef.current?.textContent;
+
+        if (updatedContent) {
+            dispatch(switchContent({ id: data.id, content: updatedContent }));
+        }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            handleContentChange();
+            if (editableDivRef.current) {
+                editableDivRef.current.blur();
+            }
+        }
+    };
 
     return (
         <>
             <Wrapper draggable onFadeOut={onFadeOut}>
                 <MainContainer>
                     <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
-                    <Textfield>{data.content}</Textfield>
+                    <Textfield
+                        ref={editableDivRef}
+                        onKeyDown={handleKeyDown}
+                        contentEditable
+                        onBlur={handleContentChange}
+                        suppressContentEditableWarning
+                    >
+                        {data.content}
+                    </Textfield>
+                    <DateContainer onClick={() => setCalendarVisible((prevstate) => !prevstate)} ref={dateContainerRef}>
+                        {formatDate(data.targetDate)}
+                    </DateContainer>
+                    {calendarVisible && (
+                        <DatePickerWrapper ref={datePickerRef}>
+                            <Datepicker />
+                        </DatePickerWrapper>
+                    )}
                     <OpenMenuButton
                         onClick={() => setMenuVisible((prevstate) => !prevstate)}
                         activeButton={menuVisible}
-                        ref={OpenMenuButtonRef}
+                        ref={openMenuButtonRef}
                     >
                         <OpenMenuButtonImg src={IconSettings} activeButton={menuVisible} />
                     </OpenMenuButton>
@@ -420,33 +495,30 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                                 <PriorityButton
                                     activeButton={priorityMenuContainerVisible}
                                     onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
-                                    ref={priorityMenuButtonRef}
                                 >
                                     <PriorityButtonImg activeButton={priorityMenuContainerVisible} src={IconArrows} />
                                 </PriorityButton>
                                 <DeleteButton onClick={() => handleDelete()} />
+                                {priorityMenuContainerVisible && (
+                                    <PriorityMenuWrapper>
+                                        <PriorityMenu
+                                            onSelect={handlePrioritySelect}
+                                            onClose={() => {
+                                                setPriorityMenuContainerVisible(false), setMenuVisible(false);
+                                            }}
+                                        />
+                                    </PriorityMenuWrapper>
+                                )}
                             </MenuContainer>
-                            {priorityMenuContainerVisible && (
-                                <PriorityMenuWrapper>
-                                    <PriorityMenu
-                                        ref={priorityMenuContainerRef}
-                                        onSelect={handlePrioritySelect}
-                                        onClose={() => setPriorityMenuContainerVisible(false)}
-                                    />
-                                </PriorityMenuWrapper>
-                            )}
                         </>
                     )}
                 </MainContainer>
                 {showSub && (
-                    <SubContainer>
-                        <DateContainer>{formatDate(data.targetDate)}</DateContainer>
-                        <TagsContainer>
-                            {data.tags.map((tag) => (
-                                <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
-                            ))}
-                        </TagsContainer>
-                    </SubContainer>
+                    <TagsContainer>
+                        {data.tags.map((tag) => (
+                            <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
+                        ))}
+                    </TagsContainer>
                 )}
             </Wrapper>
         </>

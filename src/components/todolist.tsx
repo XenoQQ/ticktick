@@ -8,16 +8,18 @@ import { TodoItemProps, PriorityMap } from '../controls/types';
 const TodolistContainer = styled.div`
     display: flex;
 
+    margin-top: 5px;
+
     flex-direction: column;
 `;
 
 const Grouptitle = styled.div`
-    padding: 0 0 0 5px;
+    padding: 5px 0 5px 5px;
     margin-top: 5px;
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
-    font-size: 20px;
+    font-size: 15px;
 `;
 
 const TodoList: React.FC = () => {
@@ -77,7 +79,7 @@ const TodoList: React.FC = () => {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
 
-            return dateString !== 'null' ? `${day}/${month}/${year}` : 'Без даты выполнения';
+            return dateString !== 'null' ? `${day}/${month}/${year}` : 'Без даты';
         };
         switch (groupOption) {
             case 'date':

@@ -3,7 +3,17 @@ import { TodoItemProps } from '../controls/types';
 
 const initialState: TodoItemProps[] = [];
 
-type sortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
+type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
+
+type SwitchPriority = {
+    id: string;
+    priority: 'none' | 'low' | 'medium' | 'high';
+};
+
+type SwitchContent = {
+    id: string;
+    content: string;
+};
 
 const todoSlice = createSlice({
     name: 'todos',
@@ -24,7 +34,19 @@ const todoSlice = createSlice({
                 todo.data.doneStatus = !todo.data.doneStatus;
             }
         },
-        sortTodos: (state, action: PayloadAction<sortCase>) => {
+        switchPriority: (state, action: PayloadAction<SwitchPriority>) => {
+            const todo = state.find((todo) => todo.data.id === action.payload.id);
+            if (todo) {
+                todo.data.priority = action.payload.priority;
+            }
+        },
+        switchContent: (state, action: PayloadAction<SwitchContent>) => {
+            const todo = state.find((todo) => todo.data.id === action.payload.id);
+            if (todo) {
+                todo.data.content = action.payload.content;
+            }
+        },
+        sortTodos: (state, action: PayloadAction<SortCase>) => {
             switch (action.payload) {
                 case 'date':
                     state.sort((a, b) => {
@@ -64,5 +86,5 @@ const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, toggleDoneStatus, sortTodos, deleteTodo } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus, sortTodos, deleteTodo, switchPriority, switchContent } = todoSlice.actions;
 export default todoSlice.reducer;

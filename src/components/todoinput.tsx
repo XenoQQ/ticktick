@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import Datepicker from './datepicker';
 import PriorityMenu from './prioritymenu';
 import IconArrows from '../assets/images/arrow-down.png';
+import CalendarIconPng from '../assets/images/calendar-icon.png';
 
 const Wrapper = styled.div<{ priority: string }>`
     position: relative;
@@ -65,6 +66,31 @@ const InputField = styled.input`
         color: blue;
     }
 `;
+const CalendarIcon = styled.div`
+    height: 100%;
+    aspect-ratio: 1/1;
+
+    background: no-repeat center/70% url(${CalendarIconPng});
+
+    transition: 0.5s ease;
+
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.7;
+    }
+`;
+
+const DatePickerWrapper = styled.div`
+    position: absolute;
+    right: 45px;
+    top: 150px;
+
+    height: 30px;
+    width: 30px;
+
+    margin-right: 5px;
+`;
 
 const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
@@ -116,10 +142,13 @@ const TodoInput: React.FC = () => {
     const [targetDate, setTargetDate] = React.useState<Date | null>(null);
     const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
     const [priority, setPriority] = React.useState<'none' | 'low' | 'medium' | 'high'>('none');
+    const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
 
     const inputRef = React.useRef<HTMLInputElement>(null);
     const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
+    const calendarButtonRef = React.useRef<HTMLDivElement>(null);
+    const datePickerRef = React.useRef<HTMLDivElement>(null);
 
     const dispatch = useDispatch();
 
@@ -180,6 +209,15 @@ const TodoInput: React.FC = () => {
         ) {
             setPriorityMenuContainerVisible(false);
         }
+
+        if (
+            calendarButtonRef.current &&
+            !calendarButtonRef.current.contains(event.target as Node) &&
+            datePickerRef.current &&
+            !datePickerRef.current.contains(event.target as Node)
+        ) {
+            setCalendarVisible(false);
+        }
     };
 
     React.useEffect(() => {
@@ -193,10 +231,30 @@ const TodoInput: React.FC = () => {
         };
     }, [priorityMenuContainerVisible]);
 
+    React.useEffect(() => {
+        if (calendarVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [calendarVisible]);
+
     return (
         <Wrapper priority={priority}>
             <InputField ref={inputRef} onKeyDown={handleKeyDown} type="text" value={content} onChange={(e) => setContent(e.target.value)} />
-            <Datepicker value={targetDate} onChange={handleDateSelect} />
+            <CalendarIcon
+                ref={calendarButtonRef}
+                onClick={() => setCalendarVisible((prevstate) => !prevstate)}
+                title="Выбрать дату выполнения"
+            />
+            {calendarVisible && (
+                <DatePickerWrapper ref={datePickerRef}>
+                    <Datepicker value={targetDate} onChange={handleDateSelect} />
+                </DatePickerWrapper>
+            )}
 
             <OpenPriorityButton
                 ref={buttonRef}
