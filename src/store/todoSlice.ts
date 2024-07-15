@@ -1,13 +1,15 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { TodoItemProps } from '../controls/types';
 import { db } from '../index';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, setDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
-const initialState: {
+export type TodosState = {
     todos: TodoItemProps[];
     loading: boolean;
     error: string | null;
-} = {
+};
+
+const initialState: TodosState = {
     todos: [],
     loading: false,
     error: null,
@@ -40,16 +42,31 @@ export const fetchTodosFromFirebase = createAsyncThunk<TodoItemProps[], void, { 
     },
 );
 
-export const saveTodoToFirebase = createAsyncThunk<TodoItemProps, TodoItemProps, { rejectValue: string }>(
-    'todos/saveTodoToFirebase',
-    async (todo, { rejectWithValue }) => {
+export const syncTodosWithFirebase = createAsyncThunk<void, TodoItemProps[], { rejectValue: string }>(
+    'todos/syncTodosWithFirebase',
+    async (todos, { rejectWithValue }) => {
         try {
             const todosCollection = collection(db, 'todos');
-            await addDoc(todosCollection, todo);
-            return todo; // Возвращаем todo, чтобы оно было доступно в fulfilled
+            for (const todo of todos) {
+                const todoDoc = doc(todosCollection, todo.data.id);
+                await setDoc(todoDoc, todo);
+            }
         } catch (error) {
-            console.error('Error saving todo to Firebase: ', error);
-            return rejectWithValue('Failed to save todo');
+            console.error('Error syncing todos with Firebase: ', error);
+            return rejectWithValue('Failed to sync todos');
+        }
+    },
+);
+
+export const deleteTodoFromFirebase = createAsyncThunk<void, string, { rejectValue: string }>(
+    'todos/deleteTodoFromFirebase',
+    async (todoId, { rejectWithValue }) => {
+        try {
+            const todoDoc = doc(db, 'todos', todoId);
+            await deleteDoc(todoDoc);
+        } catch (error) {
+            console.error('Error deleting todo from Firebase: ', error);
+            return rejectWithValue('Failed to delete todo');
         }
     },
 );
@@ -58,6 +75,9 @@ const todoSlice = createSlice({
     name: 'todos',
     initialState,
     reducers: {
+        addTodo: (state, action: PayloadAction<TodoItemProps>) => {
+            state.todos.push(action.payload);
+        },
         deleteTodo: (state, action: PayloadAction<string>) => {
             const index = state.todos.findIndex((todo) => todo.data.id === action.payload);
             if (index !== -1) {
@@ -121,19 +141,6 @@ const todoSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(saveTodoToFirebase.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(saveTodoToFirebase.fulfilled, (state, action) => {
-                state.todos.push(action.payload);
-                state.loading = false;
-                state.error = null;
-            })
-            .addCase(saveTodoToFirebase.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
-            })
             .addCase(fetchTodosFromFirebase.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -146,9 +153,32 @@ const todoSlice = createSlice({
             .addCase(fetchTodosFromFirebase.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(syncTodosWithFirebase.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(syncTodosWithFirebase.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(syncTodosWithFirebase.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(deleteTodoFromFirebase.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteTodoFromFirebase.fulfilled, (state, action) => {
+                state.todos = state.todos.filter((todo) => todo.data.id !== action.meta.arg);
+                state.loading = false;
+            })
+            .addCase(deleteTodoFromFirebase.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { toggleDoneStatus, sortTodos, deleteTodo, switchPriority, switchContent } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus, sortTodos, deleteTodo, switchPriority, switchContent } = todoSlice.actions;
 export default todoSlice.reducer;

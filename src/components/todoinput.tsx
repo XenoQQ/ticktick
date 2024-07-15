@@ -1,6 +1,6 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
-import { saveTodoToFirebase } from '../store/todoSlice';
+import { addTodo } from '../store/todoSlice';
 import { addTag } from '../store/hashtagSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
@@ -177,15 +177,11 @@ const TodoInput: React.FC = () => {
                 },
             };
 
-            try {
-                await dispatch(saveTodoToFirebase(newTodo)).unwrap();
-                dispatch(addTag(sortedTags));
-                setContent('');
-                setPriority('none');
-                setTargetDate(null);
-            } catch (err) {
-                console.error('Failed to save todo: ', err);
-            }
+            dispatch(addTodo(newTodo));
+            dispatch(addTag(sortedTags));
+            setContent('');
+            setPriority('none');
+            setTargetDate(null);
         }
     };
 

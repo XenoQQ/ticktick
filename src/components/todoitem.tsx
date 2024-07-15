@@ -2,8 +2,8 @@ import React from 'react';
 import { styled, keyframes, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store/store';
-import { toggleDoneStatus, deleteTodo, switchPriority, switchContent } from '../store/todoSlice';
+import { RootState, AppDispatch } from '../store/store';
+import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase } from '../store/todoSlice';
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
@@ -367,13 +367,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
 
     const showSub = useSelector((state: RootState) => state.showSub);
 
-    const dispatch = useDispatch();
+    const dispatch: AppDispatch = useDispatch();
 
     const handleDelete = () => {
         setMenuVisible(false);
         setOnFadeOut(true);
         setTimeout(() => {
-            dispatch(deleteTodo(data.id));
+            dispatch(deleteTodoFromFirebase(data.id));
         }, 1000);
     };
 

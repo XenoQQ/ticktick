@@ -1,12 +1,12 @@
 import React from 'react';
 import { styled } from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchTodosFromFirebase } from '../store/todoSlice';
+import { fetchTodosFromFirebase, syncTodosWithFirebase } from '../store/todoSlice';
 import TodoList from './todolist';
 import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
 import HashtagSettings from './hashtagsettings';
-import { AppDispatch } from '../store/store';
+import { AppDispatch, RootState } from '../store/store';
 
 const Appbody = styled.div`
     position: absolute;
@@ -44,17 +44,40 @@ const TodoTitle = styled.div`
     user-select: none;
 `;
 
+const Loader = styled.div`
+    display: flex;
+    margin: 20px 0 25px 0;
+
+    font-size: 40px;
+    font-family: 'Ubuntu', sans-serif;
+    color: #757575;
+
+    justify-content: center;
+    align-items: center;
+
+    user-select: none;
+`;
+
 const Todoapp: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { loading, error } = useSelector((state: any) => state.todos);
+    const { loading, error } = useSelector((state: RootState) => state.todos);
+
+    const todos = useSelector((state: RootState) => state.todos.todos);
 
     React.useEffect(() => {
         dispatch(fetchTodosFromFirebase());
     }, [dispatch]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    React.useEffect(() => {
+        dispatch(syncTodosWithFirebase(todos));
+    }, [todos, dispatch]);
+
+    const LoaderElem = () => {
+        if (loading) {
+            return <Loader>Loading...</Loader>;
+        }
+        return;
+    };
 
     if (error) {
         return <div>Error: {error}</div>;
@@ -67,6 +90,7 @@ const Todoapp: React.FC = () => {
                 <TodoInput />
                 <HashtagSettings />
                 <TodoToolbar />
+                {LoaderElem()}
                 <TodoList />
             </Appbody>
         </>
