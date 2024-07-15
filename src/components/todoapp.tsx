@@ -1,9 +1,12 @@
 import React from 'react';
 import { styled } from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchTodosFromFirebase } from '../store/todoSlice';
 import TodoList from './todolist';
 import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
 import HashtagSettings from './hashtagsettings';
+import { AppDispatch } from '../store/store';
 
 const Appbody = styled.div`
     position: absolute;
@@ -42,6 +45,21 @@ const TodoTitle = styled.div`
 `;
 
 const Todoapp: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { loading, error } = useSelector((state: any) => state.todos);
+
+    React.useEffect(() => {
+        dispatch(fetchTodosFromFirebase());
+    }, [dispatch]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
     return (
         <>
             <Appbody>

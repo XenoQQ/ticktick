@@ -19,7 +19,7 @@ const Grouptitle = styled.div`
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
-    font-size: 15px;
+    font-size: 20px;
 `;
 
 const TodoList: React.FC = () => {
@@ -28,7 +28,7 @@ const TodoList: React.FC = () => {
 
     const groupTodos = (groupCase: string) => {
         const groupKey = (key: string) => {
-            return todos.reduce(
+            return todos.todos.reduce(
                 (acc: Record<string, TodoItemProps[]>, item) => {
                     const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
                     groupValues.forEach((groupvalue: string) => {

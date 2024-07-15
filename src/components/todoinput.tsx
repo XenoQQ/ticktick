@@ -1,10 +1,12 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
-import { addTodo } from '../store/todoSlice';
+import { saveTodoToFirebase } from '../store/todoSlice';
 import { addTag } from '../store/hashtagSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../store/store';
+
 import Datepicker from './datepicker';
 import PriorityMenu from './prioritymenu';
 import IconArrows from '../assets/images/arrow-down.png';
@@ -150,9 +152,9 @@ const TodoInput: React.FC = () => {
     const calendarButtonRef = React.useRef<HTMLDivElement>(null);
     const datePickerRef = React.useRef<HTMLDivElement>(null);
 
-    const dispatch = useDispatch();
+    const dispatch: AppDispatch = useDispatch();
 
-    const handleAddTodo = () => {
+    const handleAddTodo = async () => {
         if (content) {
             const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
             const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
@@ -175,11 +177,15 @@ const TodoInput: React.FC = () => {
                 },
             };
 
-            dispatch(addTodo(newTodo));
-            dispatch(addTag(sortedTags));
-            setContent('');
-            setPriority('none');
-            setTargetDate(null);
+            try {
+                await dispatch(saveTodoToFirebase(newTodo)).unwrap();
+                dispatch(addTag(sortedTags));
+                setContent('');
+                setPriority('none');
+                setTargetDate(null);
+            } catch (err) {
+                console.error('Failed to save todo: ', err);
+            }
         }
     };
 
