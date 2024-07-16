@@ -1,26 +1,18 @@
 import React from 'react';
-import { styled, keyframes, css } from 'styled-components';
+import { styled, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
-import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase } from '../store/todoSlice';
+import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase, addTodo } from '../store/todoSlice';
+import { v4 as uuidv4 } from 'uuid';
+import PriorityMenu from './prioritymenu';
+import Datepicker from './datepicker';
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
-import PriorityMenu from './prioritymenu';
-import Datepicker from './datepicker';
+import IconSub from '../assets/images/icon-sub.png';
 
-const fadeIn = keyframes`
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-`;
-
-const fadeOut = keyframes`
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-`;
-
-const Wrapper = styled.div<{ onFadeOut: boolean }>`
+const Wrapper = styled.div`
     position: relative;
 
     display: flex;
@@ -40,23 +32,14 @@ const Wrapper = styled.div<{ onFadeOut: boolean }>`
         background-color: #2a2a2a;
     }
 
-    ${({ onFadeOut }) =>
-        onFadeOut
-            ? css`
-                  animation: ${fadeOut} 1s ease;
-              `
-            : css`
-                  animation: ${fadeIn} 1s ease;
-              `}
-
     &::after {
         content: '';
         position: absolute;
         bottom: 0;
         left: 5px;
-        width: calc(100% - 10px); /* Оставляем место для скругления */
-        height: 1px; /* Толщина нижней границы */
-        background-color: #323232; /* Цвет нижней границы */
+        width: calc(100% - 10px);
+        height: 1px;
+        background-color: #323232;
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
     }
@@ -125,7 +108,7 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
                     return '#D52b24';
             }
         }};
-        transform: translate(-53%, -47%) rotate(35deg);
+        transform: translate(-50%, -50%) rotate(35deg);
         opacity: ${({ checked }) => (checked ? '1' : '0')};
         transition: 0.5s ease;
     }
@@ -133,7 +116,7 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
 
 const Textfield = styled.div`
     display: flex;
-    width: auto;
+    min-width: 20px;
     height: 100%;
 
     margin: 0 10px 0 0;
@@ -305,6 +288,28 @@ const PriorityMenuWrapper = styled.div`
     right: 50px;
 `;
 
+const SubtaskButton = styled.div`
+    display: flex;
+
+    width: 30px;
+    height: 30px;
+
+    margin-left: 5px;
+
+    border: 1px solid #535353;
+    border-radius: 3px;
+    background: no-repeat center/80% url(${IconSub});
+
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.7;
+    }
+`;
+
 const DeleteButton = styled.div`
     display: flex;
 
@@ -355,7 +360,6 @@ const Tag = styled.div`
 
 const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
     const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
-    const [onFadeOut, setOnFadeOut] = React.useState<boolean>(false);
     const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
     const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
 
@@ -371,10 +375,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
 
     const handleDelete = () => {
         setMenuVisible(false);
-        setOnFadeOut(true);
-        setTimeout(() => {
-            dispatch(deleteTodoFromFirebase(data.id));
-        }, 1000);
+        dispatch(deleteTodoFromFirebase(data.id));
     };
 
     const formatDate = (dateString: string | null) => {
@@ -460,9 +461,41 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }
     };
 
+    const handleAddTodo = async () => {
+        const newTodo: TodoItemProps = {
+            key: uuidv4(),
+            data: {
+                id: uuidv4(),
+                content: '',
+                priority: 'none',
+                doneStatus: false,
+                tags: [],
+                timeOfCreation: new Date().toString(),
+                timeOfCompletion: null,
+                targetDate: null,
+                type: 'child',
+                parentId: data.id,
+            },
+        };
+
+        dispatch(addTodo(newTodo));
+    };
+
+    const handleClickInside = () => {
+        if (editableDivRef.current) {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(editableDivRef.current);
+            range.collapse(false);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+            editableDivRef.current.focus();
+        }
+    };
+
     return (
         <>
-            <Wrapper draggable onFadeOut={onFadeOut}>
+            <Wrapper draggable onDoubleClick={() => handleClickInside()}>
                 <MainContainer>
                     <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield
@@ -498,6 +531,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                                 >
                                     <PriorityButtonImg activeButton={priorityMenuContainerVisible} src={IconArrows} />
                                 </PriorityButton>
+                                <SubtaskButton onClick={() => handleAddTodo()} />
                                 <DeleteButton onClick={() => handleDelete()} />
                                 {priorityMenuContainerVisible && (
                                     <PriorityMenuWrapper>

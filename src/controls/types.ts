@@ -10,7 +10,7 @@ export interface TodoItemProps {
         timeOfCompletion?: string | null;
         targetDate: string | null;
         type: string;
-        childrenKeys: string[];
+        parentId: string | null;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     };
@@ -24,21 +24,15 @@ export interface PriorityMap {
     [key: string]: string;
 }
 
-//datepicker.tsx
-
 export interface DateProps {
     onChange?: (date: Date | null) => void;
     value?: Date | null;
 }
 
-//prioritymenu.tsx
-
 export interface PriorityMenuProps {
     onSelect: (priority: 'none' | 'low' | 'medium' | 'high') => void;
     onClose: () => void;
 }
-
-// Todotoolbar.tsx
 
 export interface TitleMap {
     date: string;
@@ -58,3 +52,19 @@ export type VisibleCase = 'CaseContainerVisible' | 'groupVisible' | 'sortVisible
 export type GroupCase = 'date' | 'priority' | 'tag' | 'none';
 
 export type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
+
+export type TodosState = {
+    todos: TodoItemProps[];
+    loading: boolean;
+    error: string | null;
+};
+
+export type SwitchPriority = {
+    id: string;
+    priority: 'none' | 'low' | 'medium' | 'high';
+};
+
+export type SwitchContent = {
+    id: string;
+    content: string;
+};

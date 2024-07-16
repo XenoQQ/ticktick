@@ -1,30 +1,12 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { TodoItemProps } from '../controls/types';
+import { TodoItemProps, TodosState, SortCase, SwitchPriority, SwitchContent } from '../controls/types';
 import { db } from '../index';
 import { collection, setDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
-
-export type TodosState = {
-    todos: TodoItemProps[];
-    loading: boolean;
-    error: string | null;
-};
 
 const initialState: TodosState = {
     todos: [],
     loading: false,
     error: null,
-};
-
-type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
-
-type SwitchPriority = {
-    id: string;
-    priority: 'none' | 'low' | 'medium' | 'high';
-};
-
-type SwitchContent = {
-    id: string;
-    content: string;
 };
 
 export const fetchTodosFromFirebase = createAsyncThunk<TodoItemProps[], void, { rejectValue: string }>(

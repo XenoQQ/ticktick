@@ -154,7 +154,7 @@ const TodoInput: React.FC = () => {
 
     const dispatch: AppDispatch = useDispatch();
 
-    const handleAddTodo = async () => {
+    const handleAddTodo = () => {
         if (content) {
             const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
             const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
@@ -173,7 +173,7 @@ const TodoInput: React.FC = () => {
                     timeOfCompletion: null,
                     targetDate: targetDate?.toString() ?? null,
                     type: 'parent',
-                    childrenKeys: [],
+                    parentId: null,
                 },
             };
 

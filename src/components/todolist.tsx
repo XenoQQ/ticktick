@@ -13,6 +13,14 @@ const TodolistContainer = styled.div`
     flex-direction: column;
 `;
 
+const SublistContainer = styled.div`
+    display: flex;
+
+    padding-left: 20px;
+
+    flex-direction: column;
+`;
+
 const Grouptitle = styled.div`
     padding: 5px 0 5px 5px;
     margin-top: 5px;
@@ -99,9 +107,21 @@ const TodoList: React.FC = () => {
             {groupedTodos.map(([key, group]) => (
                 <TodolistContainer key={key}>
                     {key && key !== 'undefined' && <Grouptitle>{groupTitle(groupSwitch, key)}</Grouptitle>}
-                    {group.map((todo) => (
-                        <TodoItem key={todo.key} data={todo.data} />
-                    ))}
+                    {group.map(
+                        (todo) =>
+                            !todo.data.parentId && (
+                                <>
+                                    <TodoItem key={todo.key} data={todo.data} />
+                                    <SublistContainer>
+                                        {todos.todos
+                                            .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                            .map((subTodo) => (
+                                                <TodoItem key={subTodo.key} data={subTodo.data} />
+                                            ))}
+                                    </SublistContainer>
+                                </>
+                            ),
+                    )}
                 </TodolistContainer>
             ))}
         </>
