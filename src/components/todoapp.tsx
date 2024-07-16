@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled } from 'styled-components';
+import { styled, keyframes } from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchTodosFromFirebase, syncTodosWithFirebase } from '../store/todoSlice';
 import TodoList from './todolist';
@@ -7,6 +7,15 @@ import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
 import HashtagSettings from './hashtagsettings';
 import { AppDispatch, RootState } from '../store/store';
+
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+  `;
 
 const Appbody = styled.div`
     position: absolute;
@@ -45,10 +54,12 @@ const TodoTitle = styled.div`
 `;
 
 const Loader = styled.div`
-    display: flex;
-    margin: 20px 0 25px 0;
+    position: absolute;
 
-    font-size: 40px;
+    display: flex;
+    margin: 5px 0 25px 0;
+
+    font-size: 15px;
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
 
@@ -56,6 +67,16 @@ const Loader = styled.div`
     align-items: center;
 
     user-select: none;
+`;
+
+const Spinner = styled.div`
+    border: 4px solid #757575;
+    border-top: 4px solid #202020;
+    border-radius: 50%;
+    margin-right: 5px;
+    width: 5px;
+    height: 5px;
+    animation: ${spin} 2s linear infinite;
 `;
 
 const Todoapp: React.FC = () => {
@@ -74,7 +95,12 @@ const Todoapp: React.FC = () => {
 
     const LoaderElem = () => {
         if (loading) {
-            return <Loader>Loading...</Loader>;
+            return (
+                <Loader>
+                    <Spinner />
+                    Синхронизация...
+                </Loader>
+            );
         }
         return;
     };
