@@ -199,6 +199,7 @@ const TodoInput: React.FC = () => {
 
     const handleDateSelect = (date: Date | null) => {
         setTargetDate(date);
+        setCalendarVisible(false);
         inputRef.current?.focus();
     };
 

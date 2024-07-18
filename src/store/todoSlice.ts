@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { TodoItemProps, TodosState, SortCase, SwitchPriority, SwitchContent } from '../controls/types';
+import { TodoItemProps, TodosState, SwitchPriority, SwitchContent, SwitchTargetDate } from '../controls/types';
 import { db } from '../index';
-import { collection, setDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, setDoc, getDocs, doc, query, where, deleteDoc } from 'firebase/firestore';
 
 const initialState: TodosState = {
     todos: [],
@@ -44,8 +44,17 @@ export const deleteTodoFromFirebase = createAsyncThunk<void, string, { rejectVal
     'todos/deleteTodoFromFirebase',
     async (todoId, { rejectWithValue }) => {
         try {
-            const todoDoc = doc(db, 'todos', todoId);
-            await deleteDoc(todoDoc);
+            const subTasksQuery = query(collection(db, 'todos'), where('data.parentId', '==', todoId));
+            const subTasksSnapshot = await getDocs(subTasksQuery);
+
+            const subTaskIds = subTasksSnapshot.docs.map((subTaskDoc) => subTaskDoc.id);
+
+            const idsToDelete = [...subTaskIds, todoId];
+
+            for (const id of idsToDelete) {
+                const docRef = doc(db, 'todos', id);
+                await deleteDoc(docRef);
+            }
         } catch (error) {
             console.error('Error deleting todo from Firebase: ', error);
             return rejectWithValue('Failed to delete todo');
@@ -60,16 +69,24 @@ const todoSlice = createSlice({
         addTodo: (state, action: PayloadAction<TodoItemProps>) => {
             state.todos.push(action.payload);
         },
-        deleteTodo: (state, action: PayloadAction<string>) => {
-            const index = state.todos.findIndex((todo) => todo.data.id === action.payload);
-            if (index !== -1) {
-                state.todos.splice(index, 1);
-            }
-        },
         toggleDoneStatus: (state, action: PayloadAction<string>) => {
             const todo = state.todos.find((todo) => todo.data.id === action.payload);
             if (todo) {
                 todo.data.doneStatus = !todo.data.doneStatus;
+                if (!todo.data.parentId) {
+                    const subTodos = state.todos.filter((subTodo) => subTodo.data.parentId === action.payload);
+                    subTodos?.forEach((subTodo) => {
+                        if (todo.data.doneStatus === true) {
+                            subTodo.data.doneStatus = true;
+                        }
+                    });
+                }
+            }
+        },
+        switchTargetDate: (state, action: PayloadAction<SwitchTargetDate>) => {
+            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
+            if (todo) {
+                todo.data.targetDate = action.payload.targetDate;
             }
         },
         switchPriority: (state, action: PayloadAction<SwitchPriority>) => {
@@ -82,42 +99,6 @@ const todoSlice = createSlice({
             const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
             if (todo) {
                 todo.data.content = action.payload.content;
-            }
-        },
-        sortTodos: (state, action: PayloadAction<SortCase>) => {
-            switch (action.payload) {
-                case 'date':
-                    state.todos.sort((a, b) => {
-                        const dateA = a.data.targetDate ? new Date(a.data.targetDate).getTime() : null;
-                        const dateB = b.data.targetDate ? new Date(b.data.targetDate).getTime() : null;
-
-                        if (dateA === null) return 1;
-                        if (dateB === null) return -1;
-                        return dateA - dateB;
-                    });
-                    break;
-                case 'name':
-                    state.todos.sort((a, b) => a.data.content.localeCompare(b.data.content));
-                    break;
-                case 'tag':
-                    state.todos.sort((a, b) => a.data.tags[0].localeCompare(b.data.tags[0]));
-                    break;
-                case 'priority': {
-                    const priorityOrder = { high: 1, medium: 2, low: 3, none: 4 };
-                    state.todos.sort((a, b) => priorityOrder[a.data.priority] - priorityOrder[b.data.priority]);
-                    break;
-                }
-                case 'none':
-                default:
-                    state.todos.sort((a, b) => {
-                        const dateA = a.data.timeOfCreation ? new Date(a.data.timeOfCreation).getTime() : null;
-                        const dateB = b.data.timeOfCreation ? new Date(b.data.timeOfCreation).getTime() : null;
-
-                        if (dateA === null) return 1;
-                        if (dateB === null) return -1;
-                        return dateA - dateB;
-                    });
-                    break;
             }
         },
     },
@@ -152,7 +133,10 @@ const todoSlice = createSlice({
                 state.error = null;
             })
             .addCase(deleteTodoFromFirebase.fulfilled, (state, action) => {
-                state.todos = state.todos.filter((todo) => todo.data.id !== action.meta.arg);
+                const todoId = action.meta.arg;
+
+                state.todos = state.todos.filter((todo) => todo.data.id !== todoId && todo.data.parentId !== todoId);
+
                 state.loading = false;
             })
             .addCase(deleteTodoFromFirebase.rejected, (state, action) => {
@@ -162,5 +146,5 @@ const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, toggleDoneStatus, sortTodos, deleteTodo, switchPriority, switchContent } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate } = todoSlice.actions;
 export default todoSlice.reducer;

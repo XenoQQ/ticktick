@@ -32,11 +32,47 @@ const Grouptitle = styled.div`
 
 const TodoList: React.FC = () => {
     const todos = useSelector((state: RootState) => state.todos);
-    const groupSwitch = useSelector((state: RootState) => state.groupSwitch);
+    const options = useSelector((state: RootState) => state.options);
+
+    const sortedTodos = () => {
+        const todosCopy = [...todos.todos]; // Создаем копию массива
+        switch (options.sortOption) {
+            case 'date':
+                return todosCopy.sort((a, b) => {
+                    const dateA = a.data.targetDate ? new Date(a.data.targetDate).getTime() : null;
+                    const dateB = b.data.targetDate ? new Date(b.data.targetDate).getTime() : null;
+
+                    if (dateA === null) return 1;
+                    if (dateB === null) return -1;
+                    return dateA - dateB;
+                });
+
+            case 'name':
+                return todosCopy.sort((a, b) => a.data.content.localeCompare(b.data.content));
+
+            case 'tag':
+                return todosCopy.sort((a, b) => a.data.tags[0].localeCompare(b.data.tags[0]));
+
+            case 'priority': {
+                const priorityOrder = { high: 1, medium: 2, low: 3, none: 4 };
+                return todosCopy.sort((a, b) => priorityOrder[a.data.priority] - priorityOrder[b.data.priority]);
+            }
+            case 'none':
+            default:
+                return todosCopy.sort((a, b) => {
+                    const dateA = a.data.timeOfCreation ? new Date(a.data.timeOfCreation).getTime() : null;
+                    const dateB = b.data.timeOfCreation ? new Date(b.data.timeOfCreation).getTime() : null;
+
+                    if (dateA === null) return 1;
+                    if (dateB === null) return -1;
+                    return dateA - dateB;
+                });
+        }
+    };
 
     const groupTodos = (groupCase: string) => {
         const groupKey = (key: string) => {
-            return todos.todos.reduce(
+            return sortedTodos().reduce(
                 (acc: Record<string, TodoItemProps[]>, item) => {
                     const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
                     groupValues.forEach((groupvalue: string) => {
@@ -73,7 +109,7 @@ const TodoList: React.FC = () => {
 
     type GroupedTodos = [string, TodoItemProps[]][];
 
-    const groupedTodos: GroupedTodos = Object.entries(groupTodos(groupSwitch));
+    const groupedTodos: GroupedTodos = Object.entries(groupTodos(options.groupOption));
 
     const groupTitle = (groupOption: string, key: string) => {
         const formatDate = (dateString: string | null) => {
@@ -106,7 +142,7 @@ const TodoList: React.FC = () => {
         <>
             {groupedTodos.map(([key, group]) => (
                 <TodolistContainer key={key}>
-                    {key && key !== 'undefined' && <Grouptitle>{groupTitle(groupSwitch, key)}</Grouptitle>}
+                    {key && key !== 'undefined' && <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>}
                     {group.map(
                         (todo) =>
                             !todo.data.parentId && (

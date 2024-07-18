@@ -68,3 +68,8 @@ export type SwitchContent = {
     id: string;
     content: string;
 };
+
+export type SwitchTargetDate = {
+    id: string;
+    targetDate: string | null;
+};

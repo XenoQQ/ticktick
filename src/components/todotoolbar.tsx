@@ -1,13 +1,12 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-import { sortTodos } from '../store/todoSlice';
-import { switchGroupCase } from '../store/groupSlice';
+import { switchGroupCase, switchSortCase } from '../store/optionsSlice';
 import { TitleMap, VisibleCase, VisibleCaseState, SortCase, GroupCase } from '../controls/types';
 import IconSort from '../assets/images/icon-sort.png';
 import IconShow from '../assets/images/icon-show.png';
 import IconHide from '../assets/images/icon-hide.png';
-import { RootState } from '../store/store';
+import { RootState, AppDispatch } from '../store/store';
 import { switchShow } from '../store/showSlice';
 
 const Wrapper = styled.div`
@@ -233,7 +232,7 @@ const TodoToolbar: React.FC = () => {
 
     const showSub = useSelector((state: RootState) => state.showSub);
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
 
     const [visibleCase, setVisibleCase] = React.useState<VisibleCaseState>({
         CaseContainerVisible: false,
@@ -290,7 +289,7 @@ const TodoToolbar: React.FC = () => {
     };
 
     const handleSort = (sortCase: SortCase) => {
-        dispatch(sortTodos(sortCase));
+        dispatch(switchSortCase(sortCase));
         setSortTitle(sortTitleMap[sortCase]);
         setVisibleCase({
             ...visibleCase,

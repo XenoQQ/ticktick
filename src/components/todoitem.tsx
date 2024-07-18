@@ -3,7 +3,7 @@ import { styled, css } from 'styled-components';
 import { TodoItemProps } from '../controls/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
-import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase, addTodo } from '../store/todoSlice';
+import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase, addTodo, switchTargetDate } from '../store/todoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import PriorityMenu from './prioritymenu';
 import Datepicker from './datepicker';
@@ -114,7 +114,7 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     }
 `;
 
-const Textfield = styled.div`
+const Textfield = styled.div<{ checked: boolean }>`
     display: flex;
     min-width: 20px;
     height: 100%;
@@ -125,7 +125,9 @@ const Textfield = styled.div`
 
     font-family: 'Ubuntu', sans-serif;
     font-size: 15px;
-    color: #757575;
+    color: ${({ checked }) => (checked ? '#535353' : '#757575')};
+
+    text-decoration: ${({ checked }) => (checked ? 'line-through' : 'none')};
 
     list-style: none;
     align-items: center;
@@ -493,12 +495,18 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }
     };
 
+    const handleDateSelect = (date: Date | null) => {
+        dispatch(switchTargetDate({ id: data.id, targetDate: date?.toString() ?? null }));
+        setCalendarVisible(false);
+    };
+
     return (
         <>
             <Wrapper draggable onDoubleClick={() => handleClickInside()}>
                 <MainContainer>
                     <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield
+                        checked={data.doneStatus}
                         ref={editableDivRef}
                         onKeyDown={handleKeyDown}
                         contentEditable
@@ -512,7 +520,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                     </DateContainer>
                     {calendarVisible && (
                         <DatePickerWrapper ref={datePickerRef}>
-                            <Datepicker />
+                            <Datepicker value={data.targetDate ? new Date(data.targetDate) : null} onChange={handleDateSelect} />
                         </DatePickerWrapper>
                     )}
                     <OpenMenuButton
