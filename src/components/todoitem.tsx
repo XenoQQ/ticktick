@@ -539,7 +539,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                                 >
                                     <PriorityButtonImg activeButton={priorityMenuContainerVisible} src={IconArrows} />
                                 </PriorityButton>
-                                <SubtaskButton onClick={() => handleAddTodo()} />
+                                {!data.parentId && <SubtaskButton onClick={() => handleAddTodo()} />}
                                 <DeleteButton onClick={() => handleDelete()} />
                                 {priorityMenuContainerVisible && (
                                     <PriorityMenuWrapper>

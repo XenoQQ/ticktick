@@ -1,9 +1,10 @@
 import React from 'react';
-import { styled } from 'styled-components';
+import { styled, css } from 'styled-components';
 import TodoItem from './todoitem';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { TodoItemProps, PriorityMap } from '../controls/types';
+import IconOpen from '../assets/images/icon-open.png';
 
 const TodolistContainer = styled.div`
     display: flex;
@@ -22,20 +23,70 @@ const SublistContainer = styled.div`
 `;
 
 const Grouptitle = styled.div`
+    display: flex;
+    width: auto;
+
     padding: 5px 0 5px 5px;
     margin-top: 5px;
 
     font-family: 'Ubuntu', sans-serif;
     color: #757575;
-    font-size: 20px;
+    font-size: 15px;
+
+    justify-content: flex-start;
+    align-items: center;
+`;
+
+const OpenButton = styled.div<{ isOpen: boolean }>`
+    width: 15px;
+    height: 15px;
+
+    margin-right: 5px;
+
+    background: no-repeat center/80% url(${IconOpen});
+
+    transition: 0.2s ease;
+
+    ${({ isOpen }) =>
+        isOpen
+            ? css`
+                  transform: rotate(0deg);
+              `
+            : css`
+                  transform: rotate(-90deg);
+              `}
+
+    cursor: pointer;
+
+    &:hover {
+        opacity: 0.7;
+    }
 `;
 
 const TodoList: React.FC = () => {
+    const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({});
+
     const todos = useSelector((state: RootState) => state.todos);
     const options = useSelector((state: RootState) => state.options);
 
+    React.useEffect(() => {
+        const newOpenGroups: Record<string, boolean> = {};
+        Object.keys(groupTodos(options.groupOption)).forEach((key) => {
+            newOpenGroups[key] = true;
+        });
+        setOpenGroups(newOpenGroups);
+    }, [options.groupOption]);
+
+    const toggleOpenGroup = (key: string) => {
+        setOpenGroups((prevState) => ({
+            ...prevState,
+            [key]: !prevState[key],
+        }));
+        console.log(openGroups);
+    };
+
     const sortedTodos = () => {
-        const todosCopy = [...todos.todos]; // Создаем копию массива
+        const todosCopy = [...todos.todos];
         switch (options.sortOption) {
             case 'date':
                 return todosCopy.sort((a, b) => {
@@ -142,22 +193,28 @@ const TodoList: React.FC = () => {
         <>
             {groupedTodos.map(([key, group]) => (
                 <TodolistContainer key={key}>
-                    {key && key !== 'undefined' && <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>}
-                    {group.map(
-                        (todo) =>
-                            !todo.data.parentId && (
-                                <>
-                                    <TodoItem key={todo.key} data={todo.data} />
-                                    <SublistContainer>
-                                        {todos.todos
-                                            .filter((subTodo) => subTodo.data.parentId === todo.data.id)
-                                            .map((subTodo) => (
-                                                <TodoItem key={subTodo.key} data={subTodo.data} />
-                                            ))}
-                                    </SublistContainer>
-                                </>
-                            ),
+                    {key && key !== 'undefined' && (
+                        <Grouptitle>
+                            <OpenButton isOpen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
+                            {groupTitle(options.groupOption, key)}
+                        </Grouptitle>
                     )}
+                    {(options.groupOption === 'none' || openGroups[key]) &&
+                        group.map(
+                            (todo) =>
+                                !todo.data.parentId && (
+                                    <>
+                                        <TodoItem key={todo.key} data={todo.data} />
+                                        <SublistContainer>
+                                            {sortedTodos()
+                                                .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                .map((subTodo) => (
+                                                    <TodoItem key={subTodo.key} data={subTodo.data} />
+                                                ))}
+                                        </SublistContainer>
+                                    </>
+                                ),
+                        )}
                 </TodolistContainer>
             ))}
         </>
