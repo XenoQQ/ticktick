@@ -8,43 +8,56 @@ import IconOpen from '../assets/images/icon-open.png';
 
 const TodolistContainer = styled.div`
     display: flex;
-
-    margin-top: 5px;
-
     flex-direction: column;
+
+    border-radius: 5px;
 `;
 
 const SublistContainer = styled.div`
     display: flex;
-
-    padding-left: 20px;
-
+    padding-left: 25px;
     flex-direction: column;
+`;
+
+const GroupHeader = styled.div`
+    position: relative;
+
+    display: flex;
+    height: 25px;
+
+    margin-top: 5px;
+    padding: 8px 0;
+    font-family: 'Ubuntu', sans-serif;
+    color: #757575;
+    font-size: 15px;
 `;
 
 const Grouptitle = styled.div`
     display: flex;
+
     width: auto;
+    margin: 4px 0 0 19px;
+`;
 
-    padding: 5px 0 5px 5px;
-    margin-top: 5px;
+const TodoWholeContainer = styled.div`
+    border-radius: 5px;
 
-    font-family: 'Ubuntu', sans-serif;
-    color: #757575;
-    font-size: 15px;
-
-    justify-content: flex-start;
-    align-items: center;
+    &:hover {
+        background-color: #2a2a2a69;
+    }
 `;
 
 const OpenButton = styled.div<{ isOpen: boolean }>`
+    z-index: 8888;
+
+    position: absolute;
+
+    top: 13px;
+
     width: 15px;
     height: 15px;
 
-    margin-right: 5px;
-
     background: no-repeat center/80% url(${IconOpen});
-
     transition: 0.2s ease;
 
     ${({ isOpen }) =>
@@ -63,8 +76,19 @@ const OpenButton = styled.div<{ isOpen: boolean }>`
     }
 `;
 
+const TodoItemContainer = styled.div`
+    position: relative;
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: row;
+`;
+
 const TodoList: React.FC = () => {
     const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({});
+    const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
 
     const todos = useSelector((state: RootState) => state.todos);
     const options = useSelector((state: RootState) => state.options);
@@ -82,7 +106,21 @@ const TodoList: React.FC = () => {
             ...prevState,
             [key]: !prevState[key],
         }));
-        console.log(openGroups);
+    };
+
+    React.useEffect(() => {
+        const newOpenItems: Record<string, boolean> = {};
+        todos.todos.forEach((todo) => {
+            newOpenItems[todo.data.id] = true;
+        });
+        setOpenItems(newOpenItems);
+    }, [todos]);
+
+    const toggleOpenItem = (id: string) => {
+        setOpenItems((prevState) => ({
+            ...prevState,
+            [id]: !prevState[id],
+        }));
     };
 
     const sortedTodos = () => {
@@ -126,11 +164,11 @@ const TodoList: React.FC = () => {
             return sortedTodos().reduce(
                 (acc: Record<string, TodoItemProps[]>, item) => {
                     const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
-                    groupValues.forEach((groupvalue: string) => {
-                        if (!acc[groupvalue]) {
-                            acc[groupvalue] = [];
+                    groupValues.forEach((groupValue: string) => {
+                        if (!acc[groupValue]) {
+                            acc[groupValue] = [];
                         }
-                        acc[groupvalue].push(item);
+                        acc[groupValue].push(item);
                     });
                     return acc;
                 },
@@ -194,25 +232,35 @@ const TodoList: React.FC = () => {
             {groupedTodos.map(([key, group]) => (
                 <TodolistContainer key={key}>
                     {key && key !== 'undefined' && (
-                        <Grouptitle>
+                        <GroupHeader>
                             <OpenButton isOpen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
-                            {groupTitle(options.groupOption, key)}
-                        </Grouptitle>
+                            <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>
+                        </GroupHeader>
                     )}
                     {(options.groupOption === 'none' || openGroups[key]) &&
                         group.map(
                             (todo) =>
                                 !todo.data.parentId && (
-                                    <>
-                                        <TodoItem key={todo.key} data={todo.data} />
-                                        <SublistContainer>
-                                            {sortedTodos()
-                                                .filter((subTodo) => subTodo.data.parentId === todo.data.id)
-                                                .map((subTodo) => (
-                                                    <TodoItem key={subTodo.key} data={subTodo.data} />
-                                                ))}
-                                        </SublistContainer>
-                                    </>
+                                    <TodoWholeContainer key={todo.data.id}>
+                                        <TodoItemContainer>
+                                            {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
+                                                <OpenButton
+                                                    isOpen={!!openItems[todo.data.id]}
+                                                    onClick={() => toggleOpenItem(todo.data.id)}
+                                                />
+                                            )}
+                                            <TodoItem key={todo.key} data={todo.data}></TodoItem>
+                                        </TodoItemContainer>
+                                        {openItems[todo.data.id] && (
+                                            <SublistContainer>
+                                                {sortedTodos()
+                                                    .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                    .map((subTodo) => (
+                                                        <TodoItem key={subTodo.key} data={subTodo.data} />
+                                                    ))}
+                                            </SublistContainer>
+                                        )}
+                                    </TodoWholeContainer>
                                 ),
                         )}
                 </TodolistContainer>

@@ -18,7 +18,7 @@ const Wrapper = styled.div`
     display: flex;
     height: auto;
 
-    padding: 13px;
+    padding: 13px 13px 13px 13px;
 
     border: none;
     border-radius: 5px;
@@ -27,6 +27,7 @@ const Wrapper = styled.div`
     align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
+    flex-grow: 1;
 
     &:hover {
         background-color: #2a2a2a;
@@ -61,6 +62,7 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
     aspect-ratio: 1/1;
 
     margin-right: 10px;
+    margin-left: 5px;
 
     border: 1px solid;
     border-radius: 3px;
@@ -124,8 +126,8 @@ const Textfield = styled.div<{ checked: boolean }>`
     background-color: transparent;
 
     font-family: 'Ubuntu', sans-serif;
-    font-size: 15px;
-    color: ${({ checked }) => (checked ? '#535353' : '#757575')};
+    font-size: 14px;
+    color: ${({ checked }) => (checked ? '#535353' : '#bebebe')};
 
     text-decoration: ${({ checked }) => (checked ? 'line-through' : 'none')};
 
@@ -339,7 +341,8 @@ const TagsContainer = styled.div`
     width: 100%;
     height: 15px;
 
-    margin-top: 10px;
+    margin-top: 13px;
+    margin-left: 30px;
 
     justify-content: flex-start;
     align-items: center;
@@ -555,7 +558,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                         </>
                     )}
                 </MainContainer>
-                {showSub && (
+                {showSub && !data.parentId && (
                     <TagsContainer>
                         {data.tags.map((tag) => (
                             <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>

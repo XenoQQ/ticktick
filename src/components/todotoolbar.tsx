@@ -16,6 +16,8 @@ const Wrapper = styled.div`
     display: flex;
     width: 100%;
 
+    margin-bottom: 5px;
+
     justify-content: end;
 
     user-select: none;

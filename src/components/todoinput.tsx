@@ -14,9 +14,11 @@ import CalendarIconPng from '../assets/images/calendar-icon.png';
 
 const Wrapper = styled.div<{ priority: string }>`
     position: relative;
+
     display: flex;
-    height: 45px;
+    height: 27px;
     padding: 5px;
+
     border: 1px solid;
     border-radius: 3px;
     border-color: ${({ priority }) => {
@@ -49,21 +51,28 @@ const Wrapper = styled.div<{ priority: string }>`
     justify-content: space-between;
     transition: border-color 0.5s ease;
     user-select: none;
+
+    cursor: text;
 `;
 
 const InputField = styled.input`
     display: flex;
     width: 100%;
-    height: 100%;
-    padding: 0 0 0 10px;
+    height: 15px;
+
+    margin: 0 0 0 10px;
+
     font-family: 'Ubuntu', sans-serif;
-    font-size: 25px;
+    font-size: 15px;
     color: #dfdfdf;
+
     background-color: #202020;
     border: none;
     outline: none;
+
     align-items: center;
-    justify-content: left;
+    justify-content: flex-start;
+
     span.tag {
         color: blue;
     }
@@ -85,8 +94,8 @@ const CalendarIcon = styled.div`
 
 const DatePickerWrapper = styled.div`
     position: absolute;
-    right: 45px;
-    top: 150px;
+    right: 15px;
+    top: 135px;
 
     height: 30px;
     width: 30px;
@@ -98,7 +107,7 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
-    margin-right: 3px;
+    margin-left: 3px;
     background: none;
     border: none;
     border-radius: 5px;
@@ -120,8 +129,8 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
 `;
 
 const OpenPriorityButtonImg = styled.img<{ activeButton: boolean }>`
-    width: 100%;
-    height: 100%;
+    height: 25px;
+    aspect-ratio: 1/1.5;
     transition: 0.5s ease;
     ${({ activeButton }) =>
         activeButton
@@ -188,6 +197,7 @@ const TodoInput: React.FC = () => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
             handleAddTodo();
+            event.currentTarget.textContent = '';
         }
     };
 
@@ -246,8 +256,14 @@ const TodoInput: React.FC = () => {
     }, [calendarVisible]);
 
     return (
-        <Wrapper priority={priority}>
-            <InputField ref={inputRef} onKeyDown={handleKeyDown} type="text" value={content} onChange={(e) => setContent(e.target.value)} />
+        <Wrapper priority={priority} onClick={() => inputRef.current?.focus()}>
+            <InputField
+                ref={inputRef}
+                type="text"
+                onKeyDown={handleKeyDown}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+            ></InputField>
             <CalendarIcon
                 ref={calendarButtonRef}
                 onClick={() => setCalendarVisible((prevstate) => !prevstate)}
