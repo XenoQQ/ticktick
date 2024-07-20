@@ -383,6 +383,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         dispatch(deleteTodoFromFirebase(data.id));
     };
 
+    const monthNames = [
+        'января',
+        'февраля',
+        'марта',
+        'апреля',
+        'мая',
+        'июня',
+        'июля',
+        'августа',
+        'сентября',
+        'октября',
+        'ноября',
+        'декабря',
+    ];
+
     const formatDate = (dateString: string | null) => {
         if (!dateString) {
             return 'Без даты';
@@ -390,11 +405,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
 
         const date = new Date(dateString);
 
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
+        const day = String(date.getDate());
+        const month = String(monthNames[date.getMonth() + 1]);
 
-        return `${day}/${month}/${year}`;
+        return `${day} ${month}`;
     };
 
     const handleClickOutside = (event: MouseEvent) => {

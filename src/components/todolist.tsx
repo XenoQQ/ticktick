@@ -58,16 +58,13 @@ const OpenButton = styled.div<{ isOpen: boolean }>`
     height: 15px;
 
     background: no-repeat center/80% url(${IconOpen});
-    transition: 0.2s ease;
 
     ${({ isOpen }) =>
-        isOpen
+        !isOpen
             ? css`
-                  transform: rotate(0deg);
-              `
-            : css`
                   transform: rotate(-90deg);
-              `}
+              `
+            : css``}
 
     cursor: pointer;
 
@@ -99,7 +96,7 @@ const TodoList: React.FC = () => {
             newOpenGroups[key] = true;
         });
         setOpenGroups(newOpenGroups);
-    }, [options.groupOption]);
+    }, [options.groupOption, todos]);
 
     const toggleOpenGroup = (key: string) => {
         setOpenGroups((prevState) => ({
@@ -191,14 +188,29 @@ const TodoList: React.FC = () => {
 
     const groupKeyTranslations: PriorityMap = {
         none: 'Нет',
-        low: 'Не то чтобы очень важно',
-        medium: 'Ну так, средней важности',
-        high: 'Пиздец как важно, прямо очень!',
+        low: 'Низкий приоритет',
+        medium: 'Средний приоритет',
+        high: 'Высокий приоритет',
     };
 
     type GroupedTodos = [string, TodoItemProps[]][];
 
     const groupedTodos: GroupedTodos = Object.entries(groupTodos(options.groupOption));
+
+    const monthNames = [
+        'января',
+        'февраля',
+        'марта',
+        'апреля',
+        'мая',
+        'июня',
+        'июля',
+        'августа',
+        'сентября',
+        'октября',
+        'ноября',
+        'декабря',
+    ];
 
     const groupTitle = (groupOption: string, key: string) => {
         const formatDate = (dateString: string | null) => {
@@ -208,11 +220,10 @@ const TodoList: React.FC = () => {
 
             const date = new Date(dateString);
 
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
+            const day = String(date.getDate());
+            const month = String(monthNames[date.getMonth() + 1]);
 
-            return dateString !== 'null' ? `${day}/${month}/${year}` : 'Без даты';
+            return dateString !== 'null' ? `${day} ${month}` : 'Без даты';
         };
         switch (groupOption) {
             case 'date':
@@ -220,7 +231,7 @@ const TodoList: React.FC = () => {
             case 'priority':
                 return groupKeyTranslations[key];
             case 'tag':
-                return key;
+                return key === 'none' ? 'Нет меток' : key;
             case 'none':
             default:
                 return '';
