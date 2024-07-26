@@ -12,7 +12,7 @@ import PriorityMenu from './prioritymenu';
 import IconArrows from '../assets/images/arrow-down.png';
 import CalendarIconPng from '../assets/images/calendar-icon.png';
 
-const Wrapper = styled.div<{ priority: string }>`
+const Wrapper = styled.div<{ $priority: string }>`
     position: relative;
 
     display: flex;
@@ -21,8 +21,8 @@ const Wrapper = styled.div<{ priority: string }>`
 
     border: 1px solid;
     border-radius: 3px;
-    border-color: ${({ priority }) => {
-        switch (priority) {
+    border-color: ${({ $priority }) => {
+        switch ($priority) {
             case 'none':
             default:
                 return '#535353';
@@ -34,8 +34,8 @@ const Wrapper = styled.div<{ priority: string }>`
                 return '#D52b24';
         }
     }};
-    box-shadow: ${({ priority }) => {
-        switch (priority) {
+    box-shadow: ${({ $priority }) => {
+        switch ($priority) {
             case 'none':
             default:
                 return '0 0 0px #535353;';
@@ -103,7 +103,7 @@ const DatePickerWrapper = styled.div`
     margin-right: 5px;
 `;
 
-const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
+const OpenPriorityButton = styled.button<{ $activebutton: boolean }>`
     display: flex;
     height: calc(100% - 6px);
     aspect-ratio: 1/1;
@@ -115,8 +115,8 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     justify-content: center;
     transition: 0.5s ease;
     cursor: pointer;
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   opacity: 0.7;
               `
@@ -128,12 +128,12 @@ const OpenPriorityButton = styled.button<{ activeButton: boolean }>`
     }
 `;
 
-const OpenPriorityButtonImg = styled.img<{ activeButton: boolean }>`
+const OpenPriorityButtonImg = styled.img<{ $activebutton: boolean }>`
     height: 25px;
     aspect-ratio: 1/1.5;
     transition: 0.5s ease;
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   transform: rotate(-90deg);
               `
@@ -164,12 +164,11 @@ const TodoInput: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
 
     const handleAddTodo = () => {
-        if (content) {
-            const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
-            const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
+        const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
+        const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
+        const sortedTags = tags.sort((a, b) => a.localeCompare(b));
 
-            const sortedTags = tags.sort((a, b) => a.localeCompare(b));
-
+        if (contentWithoutTags) {
             const newTodo: TodoItemProps = {
                 key: uuidv4(),
                 data: {
@@ -256,7 +255,7 @@ const TodoInput: React.FC = () => {
     }, [calendarVisible]);
 
     return (
-        <Wrapper priority={priority} onClick={() => inputRef.current?.focus()}>
+        <Wrapper $priority={priority} onClick={() => inputRef.current?.focus()}>
             <InputField
                 ref={inputRef}
                 type="text"
@@ -279,9 +278,9 @@ const TodoInput: React.FC = () => {
                 ref={buttonRef}
                 onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
                 title="Приоритет"
-                activeButton={priorityMenuContainerVisible}
+                $activebutton={priorityMenuContainerVisible}
             >
-                <OpenPriorityButtonImg src={IconArrows} activeButton={priorityMenuContainerVisible} />
+                <OpenPriorityButtonImg src={IconArrows} $activebutton={priorityMenuContainerVisible} />
             </OpenPriorityButton>
             {priorityMenuContainerVisible && (
                 <PriorityMenuWrapper>

@@ -2,10 +2,10 @@ import React from 'react';
 import { styled, keyframes } from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchTodosFromFirebase, syncTodosWithFirebase } from '../store/todoSlice';
+import { fetchHashtagsFromFirebase, syncHashtagsWithFirebase } from '../store/hashtagSlice';
 import TodoList from './todolist';
 import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
-import HashtagSettings from './hashtagsettings';
 import { AppDispatch, RootState } from '../store/store';
 
 const spin = keyframes`
@@ -84,6 +84,7 @@ const Todoapp: React.FC = () => {
     const { loading, error } = useSelector((state: RootState) => state.todos);
 
     const todos = useSelector((state: RootState) => state.todos.todos);
+    const hashtags = useSelector((state: RootState) => state.hashtags.tags);
 
     React.useEffect(() => {
         dispatch(fetchTodosFromFirebase());
@@ -92,6 +93,14 @@ const Todoapp: React.FC = () => {
     React.useEffect(() => {
         dispatch(syncTodosWithFirebase(todos));
     }, [todos, dispatch]);
+
+    React.useEffect(() => {
+        dispatch(fetchHashtagsFromFirebase());
+    }, [dispatch]);
+
+    React.useEffect(() => {
+        dispatch(syncHashtagsWithFirebase(hashtags));
+    }, [hashtags, dispatch]);
 
     const LoaderElem = () => {
         if (loading) {
@@ -114,7 +123,6 @@ const Todoapp: React.FC = () => {
             <Appbody>
                 <TodoTitle>TodoApp</TodoTitle>
                 <TodoInput />
-                <HashtagSettings />
                 <TodoToolbar />
                 {LoaderElem()}
                 <TodoList />

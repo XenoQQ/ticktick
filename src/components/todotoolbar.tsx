@@ -8,6 +8,7 @@ import IconShow from '../assets/images/icon-show.png';
 import IconHide from '../assets/images/icon-hide.png';
 import { RootState, AppDispatch } from '../store/store';
 import { switchShow } from '../store/showSlice';
+import HashtagSettings from './hashtagsettings';
 
 const Wrapper = styled.div`
     z-index: 100;
@@ -23,26 +24,21 @@ const Wrapper = styled.div`
     user-select: none;
 `;
 
-const ShowButton = styled.div<{ activeButton: boolean }>`
-    position: relative;
-    right: 34px;
-
+const ShowButton = styled.div<{ $activebutton: boolean }>`
     width: 25px;
     height: 25px;
-
-    margin: 5px 0 0 0;
 
     border: 1px solid #535353;
     border-radius: 3px;
 
-    align-self: flex-end;
+    margin-right: -5px;
 
     transition: 0.5s ease;
 
     cursor: pointer;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   background: no-repeat center/80% url(${IconShow});
               `
@@ -55,26 +51,20 @@ const ShowButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const OpenButton = styled.div<{ activeButton: boolean }>`
-    position: relative;
-
+const OpenButton = styled.div<{ $activebutton: boolean }>`
     width: 25px;
     height: 25px;
-
-    margin: 5px 0 0 0;
 
     background: no-repeat center/80% url(${IconSort});
     border: 1px solid #535353;
     border-radius: 3px;
 
-    align-self: flex-end;
-
     transition: 0.5s ease;
 
     cursor: pointer;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   background-color: #2e2e2e;
                   box-shadow: 0 0 5px rgba(83, 83, 83, 0.5);
@@ -89,6 +79,8 @@ const OpenButton = styled.div<{ activeButton: boolean }>`
 `;
 
 const CaseContainer = styled.div`
+    z-index: 200;
+
     position: absolute;
     right: -215px;
     top: 25px;
@@ -109,7 +101,7 @@ const CaseContainer = styled.div`
     justify-content: space-evenly;
 `;
 
-const CaseButton = styled.button<{ activeButton: boolean }>`
+const CaseButton = styled.button<{ $activebutton: boolean }>`
     display: flex;
     width: 100%;
     height: 25px;
@@ -128,8 +120,8 @@ const CaseButton = styled.button<{ activeButton: boolean }>`
 
     cursor: pointer;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   opacity: 0.7;
                   background-color: #2e2e2e;
@@ -223,6 +215,16 @@ const OptionButton = styled.button`
     &:hover {
         opacity: 0.7;
     }
+`;
+
+const ButtonsContainer = styled.div`
+    display: flex;
+    width: 90px;
+
+    margin-top: 5px;
+
+    justify-content: space-between;
+    align-items: center;
 `;
 
 const TodoToolbar: React.FC = () => {
@@ -321,18 +323,22 @@ const TodoToolbar: React.FC = () => {
     return (
         <>
             <Wrapper>
-                <ShowButton activeButton={showSub} onClick={() => handleShowClick()} />
-                <OpenButton
-                    activeButton={visibleCase.CaseContainerVisible}
-                    ref={buttonRef}
-                    onClick={() => handleButtonClick('CaseContainerVisible')}
-                />
+                <ButtonsContainer>
+                    <ShowButton $activebutton={showSub} onClick={() => handleShowClick()} />
+                    <HashtagSettings id={null} hashtags={null} />
+                    <OpenButton
+                        $activebutton={visibleCase.CaseContainerVisible}
+                        ref={buttonRef}
+                        onClick={() => handleButtonClick('CaseContainerVisible')}
+                    />
+                </ButtonsContainer>
+
                 {visibleCase.CaseContainerVisible && (
                     <CaseContainer ref={toolBarRef}>
-                        <CaseButton activeButton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
+                        <CaseButton $activebutton={visibleCase.groupVisible} onClick={() => handleButtonClick('groupVisible')}>
                             Группировать <CaseTitle>{groupTitle}</CaseTitle>
                         </CaseButton>
-                        <CaseButton activeButton={visibleCase.sortVisible} onClick={() => handleButtonClick('sortVisible')}>
+                        <CaseButton $activebutton={visibleCase.sortVisible} onClick={() => handleButtonClick('sortVisible')}>
                             Сортировать <CaseTitle>{sortTitle}</CaseTitle>
                         </CaseButton>
                         {visibleCase.groupVisible && (

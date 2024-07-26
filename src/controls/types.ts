@@ -67,9 +67,16 @@ export type SwitchPriority = {
 export type SwitchContent = {
     id: string;
     content: string;
+    tags: string[];
 };
 
 export type SwitchTargetDate = {
     id: string;
     targetDate: string | null;
 };
+
+export interface Hashtags {
+    tags: string[];
+    loading: boolean;
+    error: string | null;
+}

@@ -4,9 +4,12 @@ import { TodoItemProps } from '../controls/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase, addTodo, switchTargetDate } from '../store/todoSlice';
+import { addTag } from '../store/hashtagSlice';
 import { v4 as uuidv4 } from 'uuid';
 import PriorityMenu from './prioritymenu';
 import Datepicker from './datepicker';
+import HashtagSettings from './hashtagsettings';
+
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
@@ -56,7 +59,7 @@ const MainContainer = styled.div`
     align-items: center;
 `;
 
-const Checkbox = styled.div<{ checked: boolean; priority: string }>`
+const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
     display: flex;
     height: 15px;
     aspect-ratio: 1/1;
@@ -66,8 +69,8 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
 
     border: 1px solid;
     border-radius: 3px;
-    border-color: ${({ priority }) => {
-        switch (priority) {
+    border-color: ${({ $priority }) => {
+        switch ($priority) {
             case 'none':
             default:
                 return '#535353';
@@ -97,8 +100,8 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
         height: 8px;
         border: solid;
         border-width: 0 2px 2px 0;
-        border-color: ${({ priority }) => {
-            switch (priority) {
+        border-color: ${({ $priority }) => {
+            switch ($priority) {
                 case 'none':
                 default:
                     return '#535353';
@@ -111,12 +114,12 @@ const Checkbox = styled.div<{ checked: boolean; priority: string }>`
             }
         }};
         transform: translate(-50%, -50%) rotate(35deg);
-        opacity: ${({ checked }) => (checked ? '1' : '0')};
+        opacity: ${({ $checked }) => ($checked ? '1' : '0')};
         transition: 0.5s ease;
     }
 `;
 
-const Textfield = styled.div<{ checked: boolean }>`
+const Textfield = styled.div<{ $checked: boolean }>`
     display: flex;
     min-width: 20px;
     height: 100%;
@@ -127,9 +130,9 @@ const Textfield = styled.div<{ checked: boolean }>`
 
     font-family: 'Ubuntu', sans-serif;
     font-size: 14px;
-    color: ${({ checked }) => (checked ? '#535353' : '#bebebe')};
+    color: ${({ $checked }) => ($checked ? '#535353' : '#bebebe')};
 
-    text-decoration: ${({ checked }) => (checked ? 'line-through' : 'none')};
+    text-decoration: ${({ $checked }) => ($checked ? 'line-through' : 'none')};
 
     list-style: none;
     align-items: center;
@@ -174,7 +177,7 @@ const DatePickerWrapper = styled.div`
     margin-right: 3px;
 `;
 
-const OpenMenuButton = styled.div<{ activeButton: boolean }>`
+const OpenMenuButton = styled.div<{ $activebutton: boolean }>`
     height: 20px;
     aspect-ratio: 1/1;
 
@@ -184,8 +187,8 @@ const OpenMenuButton = styled.div<{ activeButton: boolean }>`
 
     cursor: pointer;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   background-color: #2e2e2e;
                   box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
@@ -199,14 +202,14 @@ const OpenMenuButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const OpenMenuButtonImg = styled.img<{ activeButton: boolean }>`
+const OpenMenuButtonImg = styled.img<{ $activebutton: boolean }>`
     width: 100%;
     height: 100%;
 
     transition: 0.5s ease;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   transform: rotate(-90deg);
               `
@@ -215,12 +218,19 @@ const OpenMenuButtonImg = styled.img<{ activeButton: boolean }>`
               `}
 `;
 
-const MenuContainer = styled.div`
+const MenuContainer = styled.div<{ $issub: boolean }>`
     z-index: 9999;
 
     position: absolute;
-    right: -70px;
-    top: 30px;
+    ${({ $issub }) =>
+        $issub
+            ? css`
+                  right: -52px;
+              `
+            : css`
+                  right: -115px;
+              `}
+    top: 25px;
 
     display: flex;
     width: auto;
@@ -239,11 +249,11 @@ const MenuContainer = styled.div`
     flex-wrap: wrap;
 `;
 
-const PriorityButton = styled.div<{ activeButton: boolean }>`
+const PriorityButton = styled.div<{ $activebutton: boolean }>`
     display: flex;
 
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
 
     border: 1px solid #535353;
     border-radius: 3px;
@@ -253,8 +263,8 @@ const PriorityButton = styled.div<{ activeButton: boolean }>`
 
     cursor: pointer;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   background-color: #2e2e2e;
                   box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
@@ -268,14 +278,14 @@ const PriorityButton = styled.div<{ activeButton: boolean }>`
     }
 `;
 
-const PriorityButtonImg = styled.img<{ activeButton: boolean }>`
+const PriorityButtonImg = styled.img<{ $activebutton: boolean }>`
     width: 70%;
     height: 90%;
 
     transition: 0.5s ease;
 
-    ${({ activeButton }) =>
-        activeButton
+    ${({ $activebutton }) =>
+        $activebutton
             ? css`
                   transform: rotate(-90deg);
               `
@@ -288,15 +298,15 @@ const PriorityMenuWrapper = styled.div`
     z-index: 9999;
 
     position: absolute;
-    top: 30px;
-    right: 50px;
+    top: 25px;
+    right: 105px;
 `;
 
 const SubtaskButton = styled.div`
     display: flex;
 
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
 
     margin-left: 5px;
 
@@ -317,8 +327,8 @@ const SubtaskButton = styled.div`
 const DeleteButton = styled.div`
     display: flex;
 
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
 
     margin-left: 5px;
 
@@ -342,7 +352,7 @@ const TagsContainer = styled.div`
     height: 15px;
 
     margin-top: 13px;
-    margin-left: 30px;
+    margin-left: 31px;
 
     justify-content: flex-start;
     align-items: center;
@@ -357,7 +367,7 @@ const Tag = styled.div`
 
     font-family: 'Ubuntu', sans-serif;
     font-size: 12px;
-    color: #757575;
+    color: #faa70ca1;
 
     justify-content: center;
     align-items: center;
@@ -466,14 +476,24 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         const updatedContent = event?.currentTarget.textContent || editableDivRef.current?.textContent;
 
         if (updatedContent) {
-            dispatch(switchContent({ id: data.id, content: updatedContent }));
+            const tags = updatedContent.match(/#[\p{L}\p{N}_]+/gu) ?? [];
+            const contentWithoutTags = updatedContent.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
+
+            const sortedTags = tags.sort((a, b) => a.localeCompare(b));
+
+            dispatch(switchContent({ id: data.id, content: contentWithoutTags, tags: sortedTags }));
+
+            dispatch(addTag(sortedTags));
+
+            if (event?.currentTarget) {
+                event.currentTarget.textContent = contentWithoutTags;
+            }
         }
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            handleContentChange();
             if (editableDivRef.current) {
                 editableDivRef.current.blur();
             }
@@ -488,7 +508,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                 content: '',
                 priority: 'none',
                 doneStatus: false,
-                tags: [],
+                tags: ['none'],
                 timeOfCreation: new Date().toString(),
                 timeOfCompletion: null,
                 targetDate: null,
@@ -521,9 +541,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         <>
             <Wrapper draggable onDoubleClick={() => handleClickInside()}>
                 <MainContainer>
-                    <Checkbox checked={data.doneStatus} priority={data.priority} onClick={() => handleComplete()} />
+                    <Checkbox $checked={data.doneStatus} $priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield
-                        checked={data.doneStatus}
+                        $checked={data.doneStatus}
                         ref={editableDivRef}
                         onKeyDown={handleKeyDown}
                         contentEditable
@@ -542,20 +562,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                     )}
                     <OpenMenuButton
                         onClick={() => setMenuVisible((prevstate) => !prevstate)}
-                        activeButton={menuVisible}
+                        $activebutton={menuVisible}
                         ref={openMenuButtonRef}
                     >
-                        <OpenMenuButtonImg src={IconSettings} activeButton={menuVisible} />
+                        <OpenMenuButtonImg src={IconSettings} $activebutton={menuVisible} />
                     </OpenMenuButton>
                     {menuVisible && (
                         <>
-                            <MenuContainer ref={menuContainerRef}>
+                            <MenuContainer ref={menuContainerRef} $issub={!!data.parentId}>
                                 <PriorityButton
-                                    activeButton={priorityMenuContainerVisible}
+                                    $activebutton={priorityMenuContainerVisible}
                                     onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
                                 >
-                                    <PriorityButtonImg activeButton={priorityMenuContainerVisible} src={IconArrows} />
+                                    <PriorityButtonImg $activebutton={priorityMenuContainerVisible} src={IconArrows} />
                                 </PriorityButton>
+                                {!data.parentId && <HashtagSettings id={data.id} hashtags={data.tags} />}
                                 {!data.parentId && <SubtaskButton onClick={() => handleAddTodo()} />}
                                 <DeleteButton onClick={() => handleDelete()} />
                                 {priorityMenuContainerVisible && (

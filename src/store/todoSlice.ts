@@ -62,6 +62,11 @@ export const deleteTodoFromFirebase = createAsyncThunk<void, string, { rejectVal
     },
 );
 
+interface DeleteTagPayload {
+    id: string;
+    tag: string;
+}
+
 const todoSlice = createSlice({
     name: 'todos',
     initialState,
@@ -83,6 +88,15 @@ const todoSlice = createSlice({
                 }
             }
         },
+        deleteTag: (state, action: PayloadAction<DeleteTagPayload>) => {
+            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
+            if (todo) {
+                todo.data.tags = todo.data.tags.filter((tag) => tag !== action.payload.tag);
+                if (todo.data.tags.length === 0) {
+                    todo.data.tags.push('none');
+                }
+            }
+        },
         switchTargetDate: (state, action: PayloadAction<SwitchTargetDate>) => {
             const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
             if (todo) {
@@ -97,8 +111,13 @@ const todoSlice = createSlice({
         },
         switchContent: (state, action: PayloadAction<SwitchContent>) => {
             const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
+            const tags = action.payload.tags;
             if (todo) {
                 todo.data.content = action.payload.content;
+                if (tags) {
+                    todo.data.tags[0] === 'none' ? todo.data.tags.splice(0, 1) : '';
+                    tags.map((tag) => (!todo.data.tags.includes(tag) ? todo.data.tags.push(tag) : ''));
+                }
             }
         },
     },
@@ -146,5 +165,5 @@ const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate, deleteTag } = todoSlice.actions;
 export default todoSlice.reducer;

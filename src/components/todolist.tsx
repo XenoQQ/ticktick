@@ -47,7 +47,7 @@ const TodoWholeContainer = styled.div`
     }
 `;
 
-const OpenButton = styled.div<{ isOpen: boolean }>`
+const OpenButton = styled.div<{ $isopen: boolean }>`
     z-index: 8888;
 
     position: absolute;
@@ -59,8 +59,8 @@ const OpenButton = styled.div<{ isOpen: boolean }>`
 
     background: no-repeat center/80% url(${IconOpen});
 
-    ${({ isOpen }) =>
-        !isOpen
+    ${({ $isopen }) =>
+        !$isopen
             ? css`
                   transform: rotate(-90deg);
               `
@@ -244,7 +244,7 @@ const TodoList: React.FC = () => {
                 <TodolistContainer key={key}>
                     {key && key !== 'undefined' && (
                         <GroupHeader>
-                            <OpenButton isOpen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
+                            <OpenButton $isopen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
                             <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>
                         </GroupHeader>
                     )}
@@ -256,7 +256,7 @@ const TodoList: React.FC = () => {
                                         <TodoItemContainer>
                                             {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
                                                 <OpenButton
-                                                    isOpen={!!openItems[todo.data.id]}
+                                                    $isopen={!!openItems[todo.data.id]}
                                                     onClick={() => toggleOpenItem(todo.data.id)}
                                                 />
                                             )}

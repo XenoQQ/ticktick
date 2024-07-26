@@ -34,13 +34,13 @@ const PriorityMenuContainerTitle = styled.div`
     justify-content: center;
 `;
 
-const PriorityMenuContainerButton = styled.div<{ bocolor: string }>`
+const PriorityMenuContainerButton = styled.div<{ $bocolor: string }>`
     display: flex;
     width: 25px;
     height: 25px;
 
     background-color: #202020;
-    border: 2px solid ${({ bocolor }) => bocolor};
+    border: 2px solid ${({ $bocolor }) => $bocolor};
     border-radius: 4px;
 
     cursor: pointer;
@@ -48,7 +48,7 @@ const PriorityMenuContainerButton = styled.div<{ bocolor: string }>`
     transition: 0.5s ease;
 
     &:hover {
-        box-shadow: ${({ bocolor }) => (bocolor !== '#3b3b3b' ? `0 0 5px ${bocolor}, inset 0 0 5px ${bocolor}` : 'none')};
+        box-shadow: ${({ $bocolor }) => ($bocolor !== '#3b3b3b' ? `0 0 5px ${$bocolor}, inset 0 0 5px ${$bocolor}` : 'none')};
     }
 `;
 
@@ -61,10 +61,10 @@ const PriorityMenu = forwardRef<HTMLDivElement, PriorityMenuProps>(({ onSelect, 
     return (
         <PriorityMenuContainer ref={ref}>
             <PriorityMenuContainerTitle>Приоритет</PriorityMenuContainerTitle>
-            <PriorityMenuContainerButton bocolor="#D52b24" onClick={() => handleSelect('high')} />
-            <PriorityMenuContainerButton bocolor="#FAA80C" onClick={() => handleSelect('medium')} />
-            <PriorityMenuContainerButton bocolor="#4772fa" onClick={() => handleSelect('low')} />
-            <PriorityMenuContainerButton bocolor="#3b3b3b" onClick={() => handleSelect('none')} />
+            <PriorityMenuContainerButton $bocolor="#D52b24" onClick={() => handleSelect('high')} />
+            <PriorityMenuContainerButton $bocolor="#FAA80C" onClick={() => handleSelect('medium')} />
+            <PriorityMenuContainerButton $bocolor="#4772fa" onClick={() => handleSelect('low')} />
+            <PriorityMenuContainerButton $bocolor="#3b3b3b" onClick={() => handleSelect('none')} />
         </PriorityMenuContainer>
     );
 });
