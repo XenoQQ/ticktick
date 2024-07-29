@@ -81,6 +81,12 @@ const todoSlice = createSlice({
             const todo = state.todos.find((todo) => todo.data.id === action.payload);
             if (todo) {
                 todo.data.doneStatus = !todo.data.doneStatus;
+                if (todo.data.parentId) {
+                    const parentTodo = state.todos.find((todos) => todos.data.id === todo.data.parentId);
+                    if (parentTodo?.data.doneStatus) {
+                        parentTodo.data.doneStatus = false;
+                    }
+                }
                 if (!todo.data.parentId) {
                     const subTodos = state.todos.filter((subTodo) => subTodo.data.parentId === action.payload);
                     subTodos?.forEach((subTodo) => {

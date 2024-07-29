@@ -387,16 +387,17 @@ const TodoList: React.FC = () => {
                                 !todo.data.parentId && (
                                     <TodoWholeContainer
                                         key={todo.data.id}
-                                        draggable={true}
-                                        onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
-                                        onDrop={(e) => dragDropHandler(e, todo.data.id)}
-                                        onDragOver={(e) => dragOverHandler(e)}
-                                        onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
-                                        onDragEnd={(e) => dragEndHandler(e)}
                                         $overitem={todo.data.id === enteredItem && currentDragItemIds.id !== enteredItem}
                                         $isallowed={isAllowed}
                                     >
-                                        <TodoItemContainer>
+                                        <TodoItemContainer
+                                            draggable={true}
+                                            onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
+                                            onDrop={(e) => dragDropHandler(e, todo.data.id)}
+                                            onDragOver={(e) => dragOverHandler(e)}
+                                            onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
+                                            onDragEnd={(e) => dragEndHandler(e)}
+                                        >
                                             {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
                                                 <OpenButton
                                                     $isopen={!!openItems[todo.data.id]}
@@ -407,12 +408,29 @@ const TodoList: React.FC = () => {
                                         </TodoItemContainer>
                                         {openItems[todo.data.id] && (
                                             <SublistContainer>
-                                                {sortedTodos()
+                                                {undoneTodos()
                                                     .filter((subTodo) => subTodo.data.parentId === todo.data.id)
                                                     .map((subTodo) => (
                                                         <SubItemContainer
                                                             key={subTodo.key}
                                                             draggable={true}
+                                                            onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
+                                                            onDragOver={(e) => dragOverHandler(e)}
+                                                            onDragEnd={(e) => dragEndHandler(e)}
+                                                            onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
+                                                            onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
+                                                            $overitem={enteredItem === subTodo.data.id}
+                                                            $isallowed={isAllowed}
+                                                        >
+                                                            <TodoItem key={subTodo.data.id} data={subTodo.data} />
+                                                        </SubItemContainer>
+                                                    ))}
+                                                {doneTodos()
+                                                    .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                    .map((subTodo) => (
+                                                        <SubItemContainer
+                                                            key={subTodo.key}
+                                                            draggable={false}
                                                             onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
                                                             onDragOver={(e) => dragOverHandler(e)}
                                                             onDragEnd={(e) => dragEndHandler(e)}
@@ -436,7 +454,7 @@ const TodoList: React.FC = () => {
                     !todo.data.parentId && (
                         <TodoWholeContainer
                             key={todo.data.id}
-                            draggable={true}
+                            draggable={false}
                             onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
                             onDrop={(e) => dragDropHandler(e, todo.data.id)}
                             onDragOver={(e) => dragOverHandler(e)}
