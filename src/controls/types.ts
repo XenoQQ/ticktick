@@ -51,7 +51,7 @@ export type VisibleCase = 'CaseContainerVisible' | 'groupVisible' | 'sortVisible
 
 export type GroupCase = 'date' | 'priority' | 'tag' | 'none';
 
-export type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'none';
+export type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'createDate' | 'none';
 
 export type TodosState = {
     todos: TodoItemProps[];

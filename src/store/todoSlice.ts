@@ -71,6 +71,9 @@ const todoSlice = createSlice({
     name: 'todos',
     initialState,
     reducers: {
+        updateTodos: (state, action: PayloadAction<TodoItemProps[]>) => {
+            state.todos = action.payload;
+        },
         addTodo: (state, action: PayloadAction<TodoItemProps>) => {
             state.todos.push(action.payload);
         },
@@ -115,8 +118,13 @@ const todoSlice = createSlice({
             if (todo) {
                 todo.data.content = action.payload.content;
                 if (tags) {
-                    todo.data.tags[0] === 'none' ? todo.data.tags.splice(0, 1) : '';
-                    tags.map((tag) => (!todo.data.tags.includes(tag) ? todo.data.tags.push(tag) : ''));
+                    tags.map((tag) => todo.data.tags.push(tag));
+                    const newTags = todo.data.tags.filter((tag) => tag !== 'none');
+                    const sortedNewTags = newTags.sort((a, b) => a.localeCompare(b));
+                    if (sortedNewTags.length === 0) {
+                        sortedNewTags.push('none');
+                    }
+                    todo.data.tags = sortedNewTags;
                 }
             }
         },
@@ -165,5 +173,5 @@ const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate, deleteTag } = todoSlice.actions;
+export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate, deleteTag, updateTodos } = todoSlice.actions;
 export default todoSlice.reducer;

@@ -539,7 +539,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
 
     return (
         <>
-            <Wrapper draggable onDoubleClick={() => handleClickInside()}>
+            <Wrapper onDoubleClick={() => handleClickInside()}>
                 <MainContainer>
                     <Checkbox $checked={data.doneStatus} $priority={data.priority} onClick={() => handleComplete()} />
                     <Textfield

@@ -1,9 +1,10 @@
 import React from 'react';
 import { styled, css } from 'styled-components';
 import TodoItem from './todoitem';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../store/store';
 import { TodoItemProps, PriorityMap } from '../controls/types';
+import { updateTodos } from '../store/todoSlice';
 import IconOpen from '../assets/images/icon-open.png';
 
 const TodolistContainer = styled.div`
@@ -39,17 +40,32 @@ const Grouptitle = styled.div`
     margin: 4px 0 0 19px;
 `;
 
-const TodoWholeContainer = styled.div`
+const TodoWholeContainer = styled.div<{ $overitem: boolean; $isallowed: boolean }>`
     border-radius: 5px;
 
     &:hover {
         background-color: #2a2a2a69;
     }
+
+    transform: translate(0, 0);
+
+    ${({ $overitem, $isallowed }) =>
+        $overitem
+            ? $isallowed
+                ? css`
+                      box-shadow: 0 0 0 1px #4772fa;
+                      background-color: #2a2a2a69;
+                      z-index: 2000;
+                  `
+                : css`
+                      box-shadow: 0 0 0 1px #d52b24;
+                      background-color: #2a2a2a69;
+                      z-index: 2000;
+                  `
+            : css``}
 `;
 
 const OpenButton = styled.div<{ $isopen: boolean }>`
-    z-index: 8888;
-
     position: absolute;
 
     top: 13px;
@@ -81,6 +97,29 @@ const TodoItemContainer = styled.div`
     display: flex;
 
     flex-direction: row;
+`;
+
+const SubItemContainer = styled.div<{ $overitem: boolean; $isallowed: boolean }>`
+    width: 100%;
+    height: 100%;
+
+    position: relative;
+    border-radius: 5px;
+
+    ${({ $overitem, $isallowed }) =>
+        $overitem
+            ? $isallowed
+                ? css`
+                      box-shadow: 0 0 0 1px #4772fa;
+                      background-color: #2a2a2a69;
+                      z-index: 2000;
+                  `
+                : css`
+                      box-shadow: 0 0 0 1px #d52b24;
+                      background-color: #2a2a2a69;
+                      z-index: 2000;
+                  `
+            : css``}
 `;
 
 const TodoList: React.FC = () => {
@@ -143,8 +182,7 @@ const TodoList: React.FC = () => {
                 const priorityOrder = { high: 1, medium: 2, low: 3, none: 4 };
                 return todosCopy.sort((a, b) => priorityOrder[a.data.priority] - priorityOrder[b.data.priority]);
             }
-            case 'none':
-            default:
+            case 'createDate':
                 return todosCopy.sort((a, b) => {
                     const dateA = a.data.timeOfCreation ? new Date(a.data.timeOfCreation).getTime() : null;
                     const dateB = b.data.timeOfCreation ? new Date(b.data.timeOfCreation).getTime() : null;
@@ -153,12 +191,26 @@ const TodoList: React.FC = () => {
                     if (dateB === null) return -1;
                     return dateA - dateB;
                 });
+
+            case 'none':
+            default:
+                return todosCopy;
         }
+    };
+
+    const undoneTodos = () => {
+        const todos = [...sortedTodos()];
+        return todos.filter((todo) => !todo.data.doneStatus);
+    };
+
+    const doneTodos = () => {
+        const todos = [...sortedTodos()];
+        return todos.filter((todo) => todo.data.doneStatus);
     };
 
     const groupTodos = (groupCase: string) => {
         const groupKey = (key: string) => {
-            return sortedTodos().reduce(
+            return undoneTodos().reduce(
                 (acc: Record<string, TodoItemProps[]>, item) => {
                     const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
                     groupValues.forEach((groupValue: string) => {
@@ -238,6 +290,87 @@ const TodoList: React.FC = () => {
         }
     };
 
+    type DragInterface = {
+        id: string | null;
+        parentId: string | null;
+    };
+
+    const [currentDragItemIds, setCurrentDragItemIds] = React.useState<DragInterface>({ id: null, parentId: null });
+
+    const [enteredItem, setEnteredItem] = React.useState<string | null>(null);
+    const [isAllowed, setIsAllowed] = React.useState<boolean>(false);
+
+    const dispatch = useDispatch<AppDispatch>();
+
+    const dragStartHandler = (e: React.DragEvent, id: string, parentId: string | null) => {
+        e.stopPropagation();
+        setCurrentDragItemIds({ id, parentId });
+    };
+
+    const dragEnterHandler = (e: React.DragEvent, id: string) => {
+        e.stopPropagation();
+        setEnteredItem(id);
+
+        const enteredTodo = todos.todos.find((todo) => todo.data.id === id);
+
+        if ((!currentDragItemIds.parentId && enteredTodo?.data.parentId) || enteredTodo?.data.doneStatus) {
+            setIsAllowed(false);
+        } else {
+            setIsAllowed(true);
+        }
+    };
+
+    const dragOverHandler = (e: React.DragEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+    };
+
+    const dragEndHandler = (e: React.DragEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setEnteredItem(null);
+        setCurrentDragItemIds({ id: null, parentId: null });
+    };
+
+    const dragDropHandler = (e: React.DragEvent, id: string) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const currentItemId = currentDragItemIds.id;
+        const currentItemParentId = currentDragItemIds.parentId;
+
+        if (currentItemId) {
+            const newTodos = todos.todos.map((todo) => ({ ...todo, data: { ...todo.data } }));
+
+            const currentIndex = newTodos.findIndex((todo) => todo.data.id === currentItemId);
+            const dropIndex = newTodos.findIndex((todo) => todo.data.id === id);
+
+            if (currentItemId && !newTodos[dropIndex].data.doneStatus) {
+                if (!currentItemParentId && !newTodos[dropIndex].data.parentId) {
+                    console.log(newTodos[dropIndex]);
+
+                    newTodos.splice(dropIndex, 0, newTodos.splice(currentIndex, 1)[0]);
+                    dispatch(updateTodos(newTodos));
+                } else if (currentItemParentId) {
+                    if (currentItemParentId === newTodos[dropIndex].data.parentId) {
+                        newTodos.splice(dropIndex, 0, newTodos.splice(currentIndex, 1)[0]);
+                        dispatch(updateTodos(newTodos));
+                    } else if (newTodos[dropIndex].data.parentId && currentItemParentId !== newTodos[dropIndex].data.parentId) {
+                        newTodos[currentIndex].data.parentId = newTodos[dropIndex].data.parentId;
+                        newTodos.splice(dropIndex, 0, newTodos.splice(currentIndex, 1)[0]);
+                        dispatch(updateTodos(newTodos));
+                    } else if (!newTodos[dropIndex].data.parentId) {
+                        newTodos[currentIndex].data.parentId = id;
+                        newTodos.splice(dropIndex, 0, newTodos.splice(currentIndex, 1)[0]);
+                        dispatch(updateTodos(newTodos));
+                    }
+                }
+            }
+
+            setEnteredItem(null);
+        }
+    };
+
     return (
         <>
             {groupedTodos.map(([key, group]) => (
@@ -252,7 +385,17 @@ const TodoList: React.FC = () => {
                         group.map(
                             (todo) =>
                                 !todo.data.parentId && (
-                                    <TodoWholeContainer key={todo.data.id}>
+                                    <TodoWholeContainer
+                                        key={todo.data.id}
+                                        draggable={true}
+                                        onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
+                                        onDrop={(e) => dragDropHandler(e, todo.data.id)}
+                                        onDragOver={(e) => dragOverHandler(e)}
+                                        onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
+                                        onDragEnd={(e) => dragEndHandler(e)}
+                                        $overitem={todo.data.id === enteredItem && currentDragItemIds.id !== enteredItem}
+                                        $isallowed={isAllowed}
+                                    >
                                         <TodoItemContainer>
                                             {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
                                                 <OpenButton
@@ -260,14 +403,26 @@ const TodoList: React.FC = () => {
                                                     onClick={() => toggleOpenItem(todo.data.id)}
                                                 />
                                             )}
-                                            <TodoItem key={todo.key} data={todo.data}></TodoItem>
+                                            <TodoItem key={todo.key} data={todo.data} />
                                         </TodoItemContainer>
                                         {openItems[todo.data.id] && (
                                             <SublistContainer>
                                                 {sortedTodos()
                                                     .filter((subTodo) => subTodo.data.parentId === todo.data.id)
                                                     .map((subTodo) => (
-                                                        <TodoItem key={subTodo.key} data={subTodo.data} />
+                                                        <SubItemContainer
+                                                            key={subTodo.key}
+                                                            draggable={true}
+                                                            onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
+                                                            onDragOver={(e) => dragOverHandler(e)}
+                                                            onDragEnd={(e) => dragEndHandler(e)}
+                                                            onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
+                                                            onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
+                                                            $overitem={enteredItem === subTodo.data.id}
+                                                            $isallowed={isAllowed}
+                                                        >
+                                                            <TodoItem key={subTodo.data.id} data={subTodo.data} />
+                                                        </SubItemContainer>
                                                     ))}
                                             </SublistContainer>
                                         )}
@@ -276,6 +431,37 @@ const TodoList: React.FC = () => {
                         )}
                 </TodolistContainer>
             ))}
+            {doneTodos().map(
+                (todo) =>
+                    !todo.data.parentId && (
+                        <TodoWholeContainer
+                            key={todo.data.id}
+                            draggable={true}
+                            onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
+                            onDrop={(e) => dragDropHandler(e, todo.data.id)}
+                            onDragOver={(e) => dragOverHandler(e)}
+                            onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
+                            $overitem={todo.data.id === enteredItem}
+                            $isallowed={isAllowed}
+                        >
+                            <TodoItemContainer>
+                                {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
+                                    <OpenButton $isopen={!!openItems[todo.data.id]} onClick={() => toggleOpenItem(todo.data.id)} />
+                                )}
+                                <TodoItem key={todo.key} data={todo.data}></TodoItem>
+                            </TodoItemContainer>
+                            {openItems[todo.data.id] && (
+                                <SublistContainer>
+                                    {sortedTodos()
+                                        .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                        .map((subTodo) => (
+                                            <TodoItem key={subTodo.key} data={subTodo.data} />
+                                        ))}
+                                </SublistContainer>
+                            )}
+                        </TodoWholeContainer>
+                    ),
+            )}
         </>
     );
 };

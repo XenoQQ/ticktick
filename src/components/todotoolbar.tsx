@@ -229,7 +229,7 @@ const ButtonsContainer = styled.div`
 
 const TodoToolbar: React.FC = () => {
     const [groupTitle, setGroupTitle] = React.useState<string>('Нет');
-    const [sortTitle, setSortTitle] = React.useState<string>('Дата добавления');
+    const [sortTitle, setSortTitle] = React.useState<string>('Нет');
 
     const toolBarRef = React.useRef<HTMLDivElement>(null);
     const buttonRef = React.useRef<HTMLDivElement>(null);
@@ -313,7 +313,8 @@ const TodoToolbar: React.FC = () => {
         name: 'Имя',
         tag: 'Метка',
         priority: 'Приоритет',
-        none: 'Дата добавления',
+        none: 'Нет',
+        createDate: 'Дата добавления',
     };
 
     const handleShowClick = () => {
@@ -351,7 +352,8 @@ const TodoToolbar: React.FC = () => {
                         )}
                         {visibleCase.sortVisible && (
                             <SortContainer>
-                                <OptionButton onClick={() => handleSort('none')}>Дата добавления</OptionButton>
+                                <OptionButton onClick={() => handleSort('none')}>Нет</OptionButton>
+                                <OptionButton onClick={() => handleSort('createDate')}>Дата добавления</OptionButton>
                                 <OptionButton onClick={() => handleSort('date')}>Дата выполнения</OptionButton>
                                 <OptionButton onClick={() => handleSort('name')}>Имя</OptionButton>
                                 <OptionButton onClick={() => handleSort('tag')}>Метка</OptionButton>
