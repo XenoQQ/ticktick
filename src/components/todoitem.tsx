@@ -167,6 +167,8 @@ const DateContainer = styled.div`
 `;
 
 const DatePickerWrapper = styled.div`
+    z-index: 9999;
+
     position: absolute;
     right: 70px;
     top: 145px;

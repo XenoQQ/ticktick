@@ -47,25 +47,27 @@ const TodoWholeContainer = styled.div<{ $overitem: boolean; $isallowed: boolean 
         background-color: #2a2a2a69;
     }
 
-    transform: translate(0, 0);
-
     ${({ $overitem, $isallowed }) =>
         $overitem
             ? $isallowed
                 ? css`
                       box-shadow: 0 0 0 1px #4772fa;
                       background-color: #2a2a2a69;
-                      z-index: 2000;
-                  `
+                      z-index: 1000;
+
+=                  `
                 : css`
                       box-shadow: 0 0 0 1px #d52b24;
                       background-color: #2a2a2a69;
-                      z-index: 2000;
+                      z-index: 1000;
+
+=
                   `
             : css``}
 `;
 
 const OpenButton = styled.div<{ $isopen: boolean }>`
+    z-index: 1000;
     position: absolute;
 
     top: 13px;
@@ -112,12 +114,12 @@ const SubItemContainer = styled.div<{ $overitem: boolean; $isallowed: boolean }>
                 ? css`
                       box-shadow: 0 0 0 1px #4772fa;
                       background-color: #2a2a2a69;
-                      z-index: 2000;
+                      z-index: 1000;
                   `
                 : css`
                       box-shadow: 0 0 0 1px #d52b24;
                       background-color: #2a2a2a69;
-                      z-index: 2000;
+                      z-index: 1000;
                   `
             : css``}
 `;
@@ -125,6 +127,7 @@ const SubItemContainer = styled.div<{ $overitem: boolean; $isallowed: boolean }>
 const TodoList: React.FC = () => {
     const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({});
     const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
+    const [openDoneTodos, setOpenDoneTodos] = React.useState<boolean>(true);
 
     const todos = useSelector((state: RootState) => state.todos);
     const options = useSelector((state: RootState) => state.options);
@@ -135,7 +138,7 @@ const TodoList: React.FC = () => {
             newOpenGroups[key] = true;
         });
         setOpenGroups(newOpenGroups);
-    }, [options.groupOption, todos]);
+    }, [options.groupOption]);
 
     const toggleOpenGroup = (key: string) => {
         setOpenGroups((prevState) => ({
@@ -144,13 +147,9 @@ const TodoList: React.FC = () => {
         }));
     };
 
-    React.useEffect(() => {
-        const newOpenItems: Record<string, boolean> = {};
-        todos.todos.forEach((todo) => {
-            newOpenItems[todo.data.id] = true;
-        });
-        setOpenItems(newOpenItems);
-    }, [todos]);
+    const toggleOpenDoneTodos = () => {
+        setOpenDoneTodos((prevstate) => !prevstate);
+    };
 
     const toggleOpenItem = (id: string) => {
         setOpenItems((prevState) => ({
@@ -210,19 +209,83 @@ const TodoList: React.FC = () => {
 
     const groupTodos = (groupCase: string) => {
         const groupKey = (key: string) => {
-            return undoneTodos().reduce(
-                (acc: Record<string, TodoItemProps[]>, item) => {
-                    const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
-                    groupValues.forEach((groupValue: string) => {
-                        if (!acc[groupValue]) {
-                            acc[groupValue] = [];
+            if (key === 'targetDate') {
+                return undoneTodos().reduce(
+                    (acc: Record<string, TodoItemProps[]>, item: TodoItemProps) => {
+                        const groupValues = [
+                            'Без даты',
+                            'Просрочено',
+                            'Сегодня',
+                            'Завтра',
+                            'Следующие 7 дней',
+                            'Следующие 30 дней',
+                            'Позже',
+                        ];
+                        const now = new Date();
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                        groupValues.forEach((groupValue: string) => {
+                            if (!acc[groupValue]) {
+                                acc[groupValue] = [];
+                            }
+                        });
+
+                        if (!item.data.parentId) {
+                            if (!item.data.targetDate) {
+                                acc['Без даты'].push(item);
+                            } else {
+                                const targetDate = new Date(item.data.targetDate);
+                                const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+
+                                if (targetDay < today) {
+                                    acc['Просрочено'].push(item);
+                                } else if (targetDay.getTime() === today.getTime()) {
+                                    acc['Сегодня'].push(item);
+                                } else {
+                                    const tomorrow = new Date(today);
+                                    tomorrow.setDate(today.getDate() + 1);
+                                    const next7Days = new Date(today);
+                                    next7Days.setDate(today.getDate() + 7);
+                                    const next30Days = new Date(today);
+                                    next30Days.setDate(today.getDate() + 30);
+
+                                    if (targetDay.getTime() === tomorrow.getTime()) {
+                                        acc['Завтра'].push(item);
+                                    } else if (targetDay <= next7Days) {
+                                        acc['Следующие 7 дней'].push(item);
+                                    } else if (targetDay <= next30Days) {
+                                        acc['Следующие 30 дней'].push(item);
+                                    } else {
+                                        acc['Позже'].push(item);
+                                    }
+                                }
+                            }
                         }
-                        acc[groupValue].push(item);
-                    });
-                    return acc;
-                },
-                {} as Record<string, TodoItemProps[]>,
-            );
+
+                        console.log(acc);
+                        return acc;
+                    },
+                    {} as Record<string, TodoItemProps[]>,
+                );
+            } else {
+                return undoneTodos().reduce(
+                    (acc: Record<string, TodoItemProps[]>, item: TodoItemProps) => {
+                        const groupValues = Array.isArray(item.data[key]) ? item.data[key] : [item.data[key]];
+                        groupValues.forEach((groupValue: string) => {
+                            if (!acc[groupValue]) {
+                                acc[groupValue] = [];
+                            }
+                            if (!item.data.parentId) {
+                                acc[groupValue].push(item);
+                            }
+                        });
+
+                        return acc;
+                    },
+
+                    {} as Record<string, TodoItemProps[]>,
+                );
+            }
         };
 
         switch (groupCase) {
@@ -249,39 +312,27 @@ const TodoList: React.FC = () => {
 
     const groupedTodos: GroupedTodos = Object.entries(groupTodos(options.groupOption));
 
-    const monthNames = [
-        'января',
-        'февраля',
-        'марта',
-        'апреля',
-        'мая',
-        'июня',
-        'июля',
-        'августа',
-        'сентября',
-        'октября',
-        'ноября',
-        'декабря',
-    ];
-
     const groupTitle = (groupOption: string, key: string) => {
-        const formatDate = (dateString: string | null) => {
-            if (!dateString) {
-                return '';
+        const formatDate = (key: string) => {
+            switch (key) {
+                case 'Без даты':
+                case 'Просрочено':
+                case 'Сегодня':
+                case 'Завтра':
+                case 'Следующие 7 дней':
+                case 'Следующие 30 дней':
+                case 'Позже':
+                    return key;
+                default:
+                    return 'Неизвестная группа';
             }
-
-            const date = new Date(dateString);
-
-            const day = String(date.getDate());
-            const month = String(monthNames[date.getMonth() + 1]);
-
-            return dateString !== 'null' ? `${day} ${month}` : 'Без даты';
         };
+
         switch (groupOption) {
             case 'date':
-                return formatDate(key.toString());
+                return formatDate(key);
             case 'priority':
-                return groupKeyTranslations[key];
+                return groupKeyTranslations[key] || 'Неизвестный приоритет';
             case 'tag':
                 return key === 'none' ? 'Нет меток' : key;
             case 'none':
@@ -347,8 +398,6 @@ const TodoList: React.FC = () => {
 
             if (currentItemId && !newTodos[dropIndex].data.doneStatus) {
                 if (!currentItemParentId && !newTodos[dropIndex].data.parentId) {
-                    console.log(newTodos[dropIndex]);
-
                     newTodos.splice(dropIndex, 0, newTodos.splice(currentIndex, 1)[0]);
                     dispatch(updateTodos(newTodos));
                 } else if (currentItemParentId) {
@@ -371,115 +420,152 @@ const TodoList: React.FC = () => {
         }
     };
 
+    const [isDataLoaded, setIsDataLoaded] = React.useState(false);
+    const [isEffectTriggered, setIsEffectTriggered] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!isEffectTriggered && todos.todos.length > 0) {
+            const newOpenItems: Record<string, boolean> = {};
+            todos.todos.forEach((todo) => {
+                newOpenItems[todo.data.id] = true;
+            });
+            setOpenItems(newOpenItems);
+            setIsDataLoaded(true);
+            setIsEffectTriggered(true);
+        }
+    }, [isEffectTriggered, todos.todos]);
+
+    React.useEffect(() => {
+        if (todos.todos.length > 0 && !isDataLoaded) {
+            setIsDataLoaded(true);
+        }
+    }, [todos.todos, isDataLoaded]);
+
     return (
         <>
-            {groupedTodos.map(([key, group]) => (
-                <TodolistContainer key={key}>
-                    {key && key !== 'undefined' && (
-                        <GroupHeader>
-                            <OpenButton $isopen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
-                            <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>
-                        </GroupHeader>
-                    )}
-                    {(options.groupOption === 'none' || openGroups[key]) &&
-                        group.map(
-                            (todo) =>
-                                !todo.data.parentId && (
-                                    <TodoWholeContainer
-                                        key={todo.data.id}
-                                        $overitem={todo.data.id === enteredItem && currentDragItemIds.id !== enteredItem}
-                                        $isallowed={isAllowed}
-                                    >
-                                        <TodoItemContainer
-                                            draggable={true}
-                                            onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
-                                            onDrop={(e) => dragDropHandler(e, todo.data.id)}
-                                            onDragOver={(e) => dragOverHandler(e)}
-                                            onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
-                                            onDragEnd={(e) => dragEndHandler(e)}
-                                        >
-                                            {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
-                                                <OpenButton
-                                                    $isopen={!!openItems[todo.data.id]}
-                                                    onClick={() => toggleOpenItem(todo.data.id)}
-                                                />
-                                            )}
-                                            <TodoItem key={todo.key} data={todo.data} />
-                                        </TodoItemContainer>
-                                        {openItems[todo.data.id] && (
-                                            <SublistContainer>
-                                                {undoneTodos()
-                                                    .filter((subTodo) => subTodo.data.parentId === todo.data.id)
-                                                    .map((subTodo) => (
-                                                        <SubItemContainer
-                                                            key={subTodo.key}
-                                                            draggable={true}
-                                                            onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
-                                                            onDragOver={(e) => dragOverHandler(e)}
-                                                            onDragEnd={(e) => dragEndHandler(e)}
-                                                            onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
-                                                            onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
-                                                            $overitem={enteredItem === subTodo.data.id}
-                                                            $isallowed={isAllowed}
-                                                        >
-                                                            <TodoItem key={subTodo.data.id} data={subTodo.data} />
-                                                        </SubItemContainer>
-                                                    ))}
-                                                {doneTodos()
-                                                    .filter((subTodo) => subTodo.data.parentId === todo.data.id)
-                                                    .map((subTodo) => (
-                                                        <SubItemContainer
-                                                            key={subTodo.key}
-                                                            draggable={false}
-                                                            onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
-                                                            onDragOver={(e) => dragOverHandler(e)}
-                                                            onDragEnd={(e) => dragEndHandler(e)}
-                                                            onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
-                                                            onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
-                                                            $overitem={enteredItem === subTodo.data.id}
-                                                            $isallowed={isAllowed}
-                                                        >
-                                                            <TodoItem key={subTodo.data.id} data={subTodo.data} />
-                                                        </SubItemContainer>
-                                                    ))}
-                                            </SublistContainer>
-                                        )}
-                                    </TodoWholeContainer>
-                                ),
-                        )}
-                </TodolistContainer>
-            ))}
-            {doneTodos().map(
-                (todo) =>
-                    !todo.data.parentId && (
-                        <TodoWholeContainer
-                            key={todo.data.id}
-                            draggable={false}
-                            onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
-                            onDrop={(e) => dragDropHandler(e, todo.data.id)}
-                            onDragOver={(e) => dragOverHandler(e)}
-                            onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
-                            $overitem={todo.data.id === enteredItem}
-                            $isallowed={isAllowed}
-                        >
-                            <TodoItemContainer>
-                                {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
-                                    <OpenButton $isopen={!!openItems[todo.data.id]} onClick={() => toggleOpenItem(todo.data.id)} />
-                                )}
-                                <TodoItem key={todo.key} data={todo.data}></TodoItem>
-                            </TodoItemContainer>
-                            {openItems[todo.data.id] && (
-                                <SublistContainer>
-                                    {sortedTodos()
-                                        .filter((subTodo) => subTodo.data.parentId === todo.data.id)
-                                        .map((subTodo) => (
-                                            <TodoItem key={subTodo.key} data={subTodo.data} />
-                                        ))}
-                                </SublistContainer>
+            {groupedTodos.map(
+                ([key, group]) =>
+                    group.length > 0 && (
+                        <TodolistContainer key={key}>
+                            {key && key !== 'undefined' && (
+                                <GroupHeader>
+                                    <OpenButton $isopen={!!openGroups[key]} onClick={() => toggleOpenGroup(key)} />
+                                    <Grouptitle>{groupTitle(options.groupOption, key)}</Grouptitle>
+                                </GroupHeader>
                             )}
-                        </TodoWholeContainer>
+                            {(options.groupOption === 'none' || openGroups[key]) &&
+                                group.map(
+                                    (todo) =>
+                                        !todo.data.parentId && (
+                                            <TodoWholeContainer
+                                                key={todo.data.id}
+                                                $overitem={todo.data.id === enteredItem && currentDragItemIds.id !== enteredItem}
+                                                $isallowed={isAllowed}
+                                            >
+                                                <TodoItemContainer
+                                                    draggable={
+                                                        options.groupOption === 'none' && options.sortOption === 'none' ? true : false
+                                                    }
+                                                    onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
+                                                    onDrop={(e) => dragDropHandler(e, todo.data.id)}
+                                                    onDragOver={(e) => dragOverHandler(e)}
+                                                    onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
+                                                    onDragEnd={(e) => dragEndHandler(e)}
+                                                >
+                                                    {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
+                                                        <OpenButton
+                                                            $isopen={!!openItems[todo.data.id]}
+                                                            onClick={() => toggleOpenItem(todo.data.id)}
+                                                        />
+                                                    )}
+                                                    <TodoItem key={todo.key} data={todo.data} />
+                                                </TodoItemContainer>
+                                                {openItems[todo.data.id] && (
+                                                    <SublistContainer>
+                                                        {undoneTodos()
+                                                            .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                            .map((subTodo) => (
+                                                                <SubItemContainer
+                                                                    key={subTodo.key}
+                                                                    draggable={
+                                                                        options.groupOption === 'none' && options.sortOption === 'none'
+                                                                            ? true
+                                                                            : false
+                                                                    }
+                                                                    onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
+                                                                    onDragOver={(e) => dragOverHandler(e)}
+                                                                    onDragEnd={(e) => dragEndHandler(e)}
+                                                                    onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
+                                                                    onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
+                                                                    $overitem={enteredItem === subTodo.data.id}
+                                                                    $isallowed={isAllowed}
+                                                                >
+                                                                    <TodoItem key={subTodo.data.id} data={subTodo.data} />
+                                                                </SubItemContainer>
+                                                            ))}
+                                                        {doneTodos()
+                                                            .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                            .map((subTodo) => (
+                                                                <SubItemContainer
+                                                                    key={subTodo.key}
+                                                                    draggable={false}
+                                                                    onDragStart={(e) => dragStartHandler(e, subTodo.data.id, todo.data.id)}
+                                                                    onDragOver={(e) => dragOverHandler(e)}
+                                                                    onDragEnd={(e) => dragEndHandler(e)}
+                                                                    onDrop={(e) => dragDropHandler(e, subTodo.data.id)}
+                                                                    onDragEnter={(e) => dragEnterHandler(e, subTodo.data.id)}
+                                                                    $overitem={enteredItem === subTodo.data.id}
+                                                                    $isallowed={isAllowed}
+                                                                >
+                                                                    <TodoItem key={subTodo.data.id} data={subTodo.data} />
+                                                                </SubItemContainer>
+                                                            ))}
+                                                    </SublistContainer>
+                                                )}
+                                            </TodoWholeContainer>
+                                        ),
+                                )}
+                        </TodolistContainer>
                     ),
             )}
+            <GroupHeader>
+                <OpenButton $isopen={openDoneTodos} onClick={() => toggleOpenDoneTodos()} />
+                <Grouptitle>Выполненные задачи</Grouptitle>
+            </GroupHeader>
+            {openDoneTodos &&
+                doneTodos().map(
+                    (todo) =>
+                        !todo.data.parentId && (
+                            <TodolistContainer key={todo.data.id}>
+                                <TodoWholeContainer
+                                    key={todo.data.id}
+                                    draggable={false}
+                                    onDragStart={(e) => dragStartHandler(e, todo.data.id, null)}
+                                    onDrop={(e) => dragDropHandler(e, todo.data.id)}
+                                    onDragOver={(e) => dragOverHandler(e)}
+                                    onDragEnter={(e) => dragEnterHandler(e, todo.data.id)}
+                                    $overitem={todo.data.id === enteredItem}
+                                    $isallowed={isAllowed}
+                                >
+                                    <TodoItemContainer>
+                                        {todos.todos.find((elem) => elem.data.parentId === todo.data.id) && (
+                                            <OpenButton $isopen={!!openItems[todo.data.id]} onClick={() => toggleOpenItem(todo.data.id)} />
+                                        )}
+                                        <TodoItem key={todo.key} data={todo.data}></TodoItem>
+                                    </TodoItemContainer>
+                                    {openItems[todo.data.id] && (
+                                        <SublistContainer>
+                                            {sortedTodos()
+                                                .filter((subTodo) => subTodo.data.parentId === todo.data.id)
+                                                .map((subTodo) => (
+                                                    <TodoItem key={subTodo.key} data={subTodo.data} />
+                                                ))}
+                                        </SublistContainer>
+                                    )}
+                                </TodoWholeContainer>
+                            </TodolistContainer>
+                        ),
+                )}
         </>
     );
 };
