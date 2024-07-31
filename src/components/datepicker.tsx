@@ -1,29 +1,13 @@
 import React from 'react';
-import { styled } from 'styled-components';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import { ru } from 'date-fns/locale';
+
 import { DateProps } from '../controls/types';
+
 import 'react-datepicker/dist/react-datepicker.css';
 import './styles/datepicker-custom.css';
+import { ru } from 'date-fns/locale';
 
 registerLocale('ru', ru);
-
-const Wrapper = styled.div`
-    z-index: 9999;
-    position: absolute;
-
-    display: flex;
-    height: 100%;
-
-    border: none;
-    background-color: transparent;
-
-    align-items: center;
-
-    user-select: none;
-
-    cursor: pointer;
-`;
 
 const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
     const [currentDate, setCurrentDate] = React.useState<Date | null>(value || null);
@@ -36,13 +20,7 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
         }
     };
 
-    return (
-        <>
-            <Wrapper>
-                <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/MM/yyyy" inline locale="ru" />
-            </Wrapper>
-        </>
-    );
+    return <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/MM/yyyy" inline locale="ru" />;
 };
 
 export default Datepicker;

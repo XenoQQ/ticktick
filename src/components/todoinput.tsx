@@ -1,58 +1,63 @@
-import React from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { styled, css } from 'styled-components';
+import { v4 as uuidv4 } from 'uuid';
+import { useDispatch } from 'react-redux';
+
+import { AppDispatch } from '../store/store';
 import { addTodo } from '../store/todoSlice';
 import { addTag } from '../store/hashtagSlice';
-import { v4 as uuidv4 } from 'uuid';
-import { TodoItemProps } from '../controls/types';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../store/store';
+
+import { TodoItemProps, Colors } from '../controls/types';
 
 import Datepicker from './datepicker';
 import PriorityMenu from './prioritymenu';
-import IconArrows from '../assets/images/arrow-down.png';
-import CalendarIconPng from '../assets/images/calendar-icon.png';
 
-const Wrapper = styled.div<{ $priority: string }>`
+import IconArrows from '../assets/images/arrow-down.png';
+import DatepickerButtonPng from '../assets/images/calendar-icon.png';
+
+const priorityColor = (priority: 'high' | 'medium' | 'low' | 'none', colors: Colors) => {
+    switch (priority) {
+        case 'high':
+            return colors.highPriority;
+        case 'medium':
+            return colors.mediumPriority;
+        case 'low':
+            return colors.lowPriority;
+        case 'none':
+        default:
+            return colors.noPriority;
+    }
+};
+
+const Wrapper = styled.div<{ $priority: 'high' | 'medium' | 'low' | 'none' }>`
     position: relative;
 
     display: flex;
-    height: 27px;
+    height: 30px;
     padding: 5px;
 
     border: 1px solid;
     border-radius: 3px;
-    border-color: ${({ $priority }) => {
-        switch ($priority) {
-            case 'none':
-            default:
-                return '#535353';
-            case 'low':
-                return '#4772fa';
-            case 'medium':
-                return '#FAA80C';
-            case 'high':
-                return '#D52b24';
+    border-color: ${({ $priority, theme }) => priorityColor($priority, theme.colors)};
+    box-shadow: ${({ $priority, theme }) => {
+        if ($priority !== 'none') {
+            return `0 0 5px ${priorityColor($priority, theme.colors)}, inset 0 0 5px ${priorityColor($priority, theme.colors)}`;
+        } else {
+            return 'none';
         }
     }};
-    box-shadow: ${({ $priority }) => {
-        switch ($priority) {
-            case 'none':
-            default:
-                return '0 0 0px #535353;';
-            case 'low':
-                return '0 0 5px #4772fa, inset 0 0 5px #4772fa;';
-            case 'medium':
-                return '0 0 5px #FAA80C, inset 0 0 5px #FAA80C;';
-            case 'high':
-                return '0 0 5px #D52b24, inset 0 0 5px #D52b24;';
-        }
-    }};
-    align-items: center;
-    justify-content: space-between;
-    transition: border-color 0.5s ease;
-    user-select: none;
 
+    justify-content: space-between;
+    align-items: center;
+
+    transition: border-color 0.5s ease;
+
+    user-select: none;
     cursor: text;
+
+    @media (max-width: 768px) {
+        height: auto;
+    }
 `;
 
 const InputField = styled.input`
@@ -60,28 +65,25 @@ const InputField = styled.input`
     width: 100%;
     height: 15px;
 
-    margin: 0 0 0 10px;
+    margin-left: 10px;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 15px;
-    color: #dfdfdf;
+    color: ${({ theme }) => theme.colors.activeTextColor};
 
-    background-color: #202020;
+    background-color: ${({ theme }) => theme.colors.backgroundColor};
     border: none;
     outline: none;
 
-    align-items: center;
     justify-content: flex-start;
-
-    span.tag {
-        color: blue;
-    }
+    align-items: center;
 `;
-const CalendarIcon = styled.div`
+
+const DatepickerButton = styled.div`
     height: 100%;
     aspect-ratio: 1/1;
 
-    background: no-repeat center/70% url(${CalendarIconPng});
+    background: no-repeat center/70% url(${DatepickerButtonPng});
 
     transition: 0.5s ease;
 
@@ -90,31 +92,39 @@ const CalendarIcon = styled.div`
     &:hover {
         opacity: 0.7;
     }
+
+    @media (max-width: 768px) {
+        height: 30px;
+        width: 30px;
+    }
 `;
 
-const DatePickerWrapper = styled.div`
+const DatepickerWrapper = styled.div`
     position: absolute;
-    right: 15px;
-    top: 135px;
+    right: -195px;
+    top: 25px;
 
-    height: 30px;
-    width: 30px;
-
-    margin-right: 5px;
+    @media (max-width: 768px) {
+        right: -5px;
+        top: 30px;
+    }
 `;
 
-const OpenPriorityButton = styled.button<{ $activebutton: boolean }>`
+const OpenPriorityMenuButton = styled.button<{ $activebutton: boolean }>`
     display: flex;
-    height: calc(100% - 6px);
+    height: 100%;
     aspect-ratio: 1/1;
-    margin-left: 3px;
+
     background: none;
     border: none;
     border-radius: 5px;
+
     align-items: center;
     justify-content: center;
+
     transition: 0.5s ease;
     cursor: pointer;
+
     ${({ $activebutton }) =>
         $activebutton
             ? css`
@@ -123,15 +133,23 @@ const OpenPriorityButton = styled.button<{ $activebutton: boolean }>`
             : css`
                   opacity: 1;
               `}
+
     &:hover {
-        opacity: 0.5;
+        opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+        height: 30px;
+        width: 30px;
     }
 `;
 
-const OpenPriorityButtonImg = styled.img<{ $activebutton: boolean }>`
+const OpenPriorityMenuButtonImg = styled.img<{ $activebutton: boolean }>`
     height: 25px;
     aspect-ratio: 1/1.5;
+
     transition: 0.5s ease;
+
     ${({ $activebutton }) =>
         $activebutton
             ? css`
@@ -140,100 +158,114 @@ const OpenPriorityButtonImg = styled.img<{ $activebutton: boolean }>`
             : css`
                   transform: rotate(180deg);
               `}
+
+    @media (max-width: 768px) {
+        height: 25px;
+    }
 `;
 
 const PriorityMenuWrapper = styled.div`
     position: absolute;
-    right: -5px;
-    top: -1px;
+    right: 15px;
+    top: 25px;
+
+    @media (max-width: 768px) {
+        right: 140px;
+        top: 30px;
+    }
 `;
 
-const TodoInput: React.FC = () => {
-    const [content, setContent] = React.useState<string>('');
-    const [targetDate, setTargetDate] = React.useState<Date | null>(null);
-    const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
-    const [priority, setPriority] = React.useState<'none' | 'low' | 'medium' | 'high'>('none');
-    const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
+const MemoizedDatepicker = React.memo(Datepicker);
+const MemoizedPriorityMenu = React.memo(PriorityMenu);
 
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const priorityMenuContainerRef = React.useRef<HTMLDivElement>(null);
-    const buttonRef = React.useRef<HTMLButtonElement>(null);
-    const calendarButtonRef = React.useRef<HTMLDivElement>(null);
-    const datePickerRef = React.useRef<HTMLDivElement>(null);
+const TodoInput: React.FC = () => {
+    const [content, setContent] = useState<string>('');
+    const [targetDate, setTargetDate] = useState<Date | null>(null);
+    const [priority, setPriority] = useState<'none' | 'low' | 'medium' | 'high'>('none');
+    const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = useState<boolean>(false);
+    const [datepickerVisible, setDatepickerVisible] = useState<boolean>(false);
+
+    const inputFieldRef = useRef<HTMLInputElement>(null);
+    const openPriorityMenuButtonRef = useRef<HTMLButtonElement>(null);
+    const priorityMenuWrapperRef = useRef<HTMLDivElement>(null);
+    const datepickerButtonRef = useRef<HTMLDivElement>(null);
+    const datepickerRef = useRef<HTMLDivElement>(null);
 
     const dispatch: AppDispatch = useDispatch();
 
-    const handleAddTodo = () => {
+    const handleAddTodo = (): void => {
+        if (!content.trim()) return;
+
         const tags = content.match(/#[\p{L}\p{N}_]+/gu) ?? ['none'];
         const contentWithoutTags = content.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
+
+        if (!contentWithoutTags) return;
+
         const sortedTags = tags.sort((a, b) => a.localeCompare(b));
 
-        if (contentWithoutTags) {
-            const newTodo: TodoItemProps = {
-                key: uuidv4(),
-                data: {
-                    id: uuidv4(),
-                    content: contentWithoutTags,
-                    priority: priority,
-                    doneStatus: false,
-                    tags: sortedTags,
-                    timeOfCreation: new Date().toString(),
-                    timeOfCompletion: null,
-                    targetDate: targetDate?.toString() ?? null,
-                    type: 'parent',
-                    parentId: null,
-                },
-            };
+        const newTodo: TodoItemProps = {
+            key: uuidv4(),
+            data: {
+                id: uuidv4(),
+                content: contentWithoutTags,
+                priority: priority,
+                doneStatus: false,
+                tags: sortedTags,
+                timeOfCreation: new Date().toString(),
+                timeOfCompletion: null,
+                targetDate: targetDate?.toString() ?? null,
+                parentId: null,
+            },
+        };
 
-            dispatch(addTodo(newTodo));
-            dispatch(addTag(sortedTags));
-            setContent('');
-            setPriority('none');
-            setTargetDate(null);
-        }
+        dispatch(addTodo(newTodo));
+        dispatch(addTag(sortedTags));
+        setContent('');
+        setPriority('none');
+        setTargetDate(null);
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleEnterKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
         if (event.key === 'Enter') {
             handleAddTodo();
             event.currentTarget.textContent = '';
         }
     };
 
-    const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
+    const handlePrioritySelect = useCallback((priority: 'none' | 'low' | 'medium' | 'high'): void => {
         setPriority(priority);
         setPriorityMenuContainerVisible(false);
-        inputRef.current?.focus();
-    };
+        inputFieldRef.current?.focus();
+    }, []);
 
-    const handleDateSelect = (date: Date | null) => {
+    const handleDateSelect = useCallback((date: Date | null): void => {
         setTargetDate(date);
-        setCalendarVisible(false);
-        inputRef.current?.focus();
-    };
+        setDatepickerVisible(false);
+        inputFieldRef.current?.focus();
+    }, []);
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = useCallback((event: MouseEvent): void => {
         if (
-            priorityMenuContainerRef.current &&
-            !priorityMenuContainerRef.current.contains(event.target as Node) &&
-            buttonRef.current &&
-            !buttonRef.current.contains(event.target as Node)
+            priorityMenuWrapperRef.current &&
+            !priorityMenuWrapperRef.current.contains(event.target as Node) &&
+            openPriorityMenuButtonRef.current &&
+            !openPriorityMenuButtonRef.current.contains(event.target as Node)
         ) {
             setPriorityMenuContainerVisible(false);
         }
 
         if (
-            calendarButtonRef.current &&
-            !calendarButtonRef.current.contains(event.target as Node) &&
-            datePickerRef.current &&
-            !datePickerRef.current.contains(event.target as Node)
+            datepickerButtonRef.current &&
+            !datepickerButtonRef.current.contains(event.target as Node) &&
+            datepickerRef.current &&
+            !datepickerRef.current.contains(event.target as Node)
         ) {
-            setCalendarVisible(false);
+            setDatepickerVisible(false);
         }
-    };
+    }, []);
 
-    React.useEffect(() => {
-        if (priorityMenuContainerVisible) {
+    useEffect(() => {
+        if (priorityMenuContainerVisible || datepickerVisible) {
             document.addEventListener('mousedown', handleClickOutside);
         } else {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -241,54 +273,38 @@ const TodoInput: React.FC = () => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [priorityMenuContainerVisible]);
-
-    React.useEffect(() => {
-        if (calendarVisible) {
-            document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [calendarVisible]);
+    }, [priorityMenuContainerVisible, datepickerVisible]);
 
     return (
-        <Wrapper $priority={priority} onClick={() => inputRef.current?.focus()}>
+        <Wrapper $priority={priority} onClick={() => inputFieldRef.current?.focus()}>
             <InputField
-                ref={inputRef}
+                ref={inputFieldRef}
                 type="text"
-                onKeyDown={handleKeyDown}
+                onKeyDown={handleEnterKeyDown}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-            ></InputField>
-            <CalendarIcon
-                ref={calendarButtonRef}
-                onClick={() => setCalendarVisible((prevstate) => !prevstate)}
-                title="Выбрать дату выполнения"
             />
-            {calendarVisible && (
-                <DatePickerWrapper ref={datePickerRef}>
-                    <Datepicker value={targetDate} onChange={handleDateSelect} />
-                </DatePickerWrapper>
+            <DatepickerButton
+                ref={datepickerButtonRef}
+                onClick={() => setDatepickerVisible((prevstate) => !prevstate)}
+                title="Дата выполнения"
+            />
+            {datepickerVisible && (
+                <DatepickerWrapper ref={datepickerRef}>
+                    <MemoizedDatepicker value={targetDate} onChange={handleDateSelect} />
+                </DatepickerWrapper>
             )}
-
-            <OpenPriorityButton
-                ref={buttonRef}
+            <OpenPriorityMenuButton
+                ref={openPriorityMenuButtonRef}
                 onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
                 title="Приоритет"
                 $activebutton={priorityMenuContainerVisible}
             >
-                <OpenPriorityButtonImg src={IconArrows} $activebutton={priorityMenuContainerVisible} />
-            </OpenPriorityButton>
+                <OpenPriorityMenuButtonImg src={IconArrows} $activebutton={priorityMenuContainerVisible} />
+            </OpenPriorityMenuButton>
             {priorityMenuContainerVisible && (
-                <PriorityMenuWrapper>
-                    <PriorityMenu
-                        ref={priorityMenuContainerRef}
-                        onSelect={handlePrioritySelect}
-                        onClose={() => setPriorityMenuContainerVisible(false)}
-                    />
+                <PriorityMenuWrapper ref={priorityMenuWrapperRef}>
+                    <MemoizedPriorityMenu onSelect={handlePrioritySelect} onClose={() => setPriorityMenuContainerVisible(false)} />
                 </PriorityMenuWrapper>
             )}
         </Wrapper>

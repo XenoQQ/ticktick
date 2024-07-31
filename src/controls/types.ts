@@ -9,7 +9,6 @@ export interface TodoItemProps {
         timeOfCreation: string;
         timeOfCompletion?: string | null;
         targetDate: string | null;
-        type: string;
         parentId: string | null;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
@@ -79,4 +78,30 @@ export interface Hashtags {
     tags: string[];
     loading: boolean;
     error: string | null;
+}
+
+///// Theme
+
+export interface Colors {
+    noPriority: string;
+    lowPriority: string;
+    mediumPriority: string;
+    highPriority: string;
+    backgroundColor: string;
+    activeTextColor: string;
+    uiTextColor: string;
+}
+
+export interface BoxShadow {
+    default: string;
+}
+
+export interface Typography {
+    FontFamily: string;
+}
+
+export interface Theme {
+    colors: Colors;
+    boxShadow: BoxShadow;
+    typography: Typography;
 }
