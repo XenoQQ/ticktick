@@ -15,12 +15,11 @@ const Datepicker: React.FC<DateProps> = ({ value, onChange }) => {
     const handleChange = (date: Date | null) => {
         const selectedDate = date ?? null;
         setCurrentDate(selectedDate);
-        if (onChange) {
-            onChange(selectedDate);
-        }
+
+        onChange(selectedDate);
     };
 
-    return <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/MM/yyyy" inline locale="ru" />;
+    return <DatePicker id="date-picker" selected={currentDate} onChange={handleChange} dateFormat="dd/mm/yyyy" inline locale="ru" />;
 };
 
 export default Datepicker;

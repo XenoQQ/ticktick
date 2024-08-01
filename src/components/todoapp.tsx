@@ -43,7 +43,7 @@ const AppBody = styled.div`
         min-height: 100vh;
         top: 0px;
         border-radius: 0px;
-        padding: 2.5vw;
+        padding: 0 2.5vw;
     }
 `;
 

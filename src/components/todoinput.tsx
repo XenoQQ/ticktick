@@ -77,9 +77,13 @@ const InputField = styled.input`
 
     justify-content: flex-start;
     align-items: center;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.typography.fontSizeMobile};
+    }
 `;
 
-const DatepickerButton = styled.div`
+const DatepickerButton = styled.div<{ $activebutton: boolean }>`
     height: 100%;
     aspect-ratio: 1/1;
 
@@ -92,6 +96,15 @@ const DatepickerButton = styled.div`
     &:hover {
         opacity: 0.7;
     }
+
+    ${({ $activebutton }) =>
+        $activebutton
+            ? css`
+                  opacity: 0.7;
+              `
+            : css`
+                  opacity: 1;
+              `}
 
     @media (max-width: 768px) {
         height: 30px;
@@ -125,6 +138,10 @@ const OpenPriorityMenuButton = styled.button<{ $activebutton: boolean }>`
     transition: 0.5s ease;
     cursor: pointer;
 
+    &:hover {
+        opacity: 0.7;
+    }
+
     ${({ $activebutton }) =>
         $activebutton
             ? css`
@@ -133,10 +150,6 @@ const OpenPriorityMenuButton = styled.button<{ $activebutton: boolean }>`
             : css`
                   opacity: 1;
               `}
-
-    &:hover {
-        opacity: 0.7;
-    }
 
     @media (max-width: 768px) {
         height: 30px;
@@ -180,10 +193,11 @@ const MemoizedPriorityMenu = React.memo(PriorityMenu);
 
 const TodoInput: React.FC = () => {
     const [content, setContent] = useState<string>('');
-    const [targetDate, setTargetDate] = useState<Date | null>(null);
-    const [priority, setPriority] = useState<'none' | 'low' | 'medium' | 'high'>('none');
     const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = useState<boolean>(false);
     const [datepickerVisible, setDatepickerVisible] = useState<boolean>(false);
+
+    const targetDateRef = useRef<Date | null>(null);
+    const priorityRef = useRef<'none' | 'low' | 'medium' | 'high'>('none');
 
     const inputFieldRef = useRef<HTMLInputElement>(null);
     const openPriorityMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -208,12 +222,12 @@ const TodoInput: React.FC = () => {
             data: {
                 id: uuidv4(),
                 content: contentWithoutTags,
-                priority: priority,
+                priority: priorityRef.current,
                 doneStatus: false,
                 tags: sortedTags,
                 timeOfCreation: new Date().toString(),
                 timeOfCompletion: null,
-                targetDate: targetDate?.toString() ?? null,
+                targetDate: targetDateRef.current?.toString() ?? null,
                 parentId: null,
             },
         };
@@ -221,8 +235,8 @@ const TodoInput: React.FC = () => {
         dispatch(addTodo(newTodo));
         dispatch(addTag(sortedTags));
         setContent('');
-        setPriority('none');
-        setTargetDate(null);
+        priorityRef.current = 'none';
+        targetDateRef.current = null;
     };
 
     const handleEnterKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -233,13 +247,13 @@ const TodoInput: React.FC = () => {
     };
 
     const handlePrioritySelect = useCallback((priority: 'none' | 'low' | 'medium' | 'high'): void => {
-        setPriority(priority);
+        priorityRef.current = priority;
         setPriorityMenuContainerVisible(false);
         inputFieldRef.current?.focus();
     }, []);
 
     const handleDateSelect = useCallback((date: Date | null): void => {
-        setTargetDate(date);
+        targetDateRef.current = date;
         setDatepickerVisible(false);
         inputFieldRef.current?.focus();
     }, []);
@@ -276,7 +290,7 @@ const TodoInput: React.FC = () => {
     }, [priorityMenuContainerVisible, datepickerVisible]);
 
     return (
-        <Wrapper $priority={priority} onClick={() => inputFieldRef.current?.focus()}>
+        <Wrapper $priority={priorityRef.current} onClick={() => inputFieldRef.current?.focus()}>
             <InputField
                 ref={inputFieldRef}
                 type="text"
@@ -288,10 +302,11 @@ const TodoInput: React.FC = () => {
                 ref={datepickerButtonRef}
                 onClick={() => setDatepickerVisible((prevstate) => !prevstate)}
                 title="Дата выполнения"
+                $activebutton={datepickerVisible}
             />
             {datepickerVisible && (
                 <DatepickerWrapper ref={datepickerRef}>
-                    <MemoizedDatepicker value={targetDate} onChange={handleDateSelect} />
+                    <MemoizedDatepicker value={targetDateRef.current} onChange={handleDateSelect} />
                 </DatepickerWrapper>
             )}
             <OpenPriorityMenuButton

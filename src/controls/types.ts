@@ -24,8 +24,8 @@ export interface PriorityMap {
 }
 
 export interface DateProps {
-    onChange?: (date: Date | null) => void;
-    value?: Date | null;
+    onChange: (date: Date | null) => void;
+    value: Date | null;
 }
 
 export interface PriorityMenuProps {
@@ -42,11 +42,11 @@ export interface TitleMap {
 }
 
 export type VisibleCaseState = {
-    CaseContainerVisible: boolean;
-    groupVisible: boolean;
-    sortVisible: boolean;
+    optionsWrapperVisible: boolean;
+    groupWrapperVisible: boolean;
+    sortWrapperVisible: boolean;
 };
-export type VisibleCase = 'CaseContainerVisible' | 'groupVisible' | 'sortVisible';
+export type VisibleCase = 'optionsButtonClick' | 'groupButtonClick' | 'sortButtonClick';
 
 export type GroupCase = 'date' | 'priority' | 'tag' | 'none';
 
@@ -90,10 +90,13 @@ export interface Colors {
     backgroundColor: string;
     activeTextColor: string;
     uiTextColor: string;
+    defaultBorder: string;
+    activeButtonBackground: string;
 }
 
 export interface BoxShadow {
     default: string;
+    activeButton: string;
 }
 
 export interface Typography {
@@ -104,4 +107,9 @@ export interface Theme {
     colors: Colors;
     boxShadow: BoxShadow;
     typography: Typography;
+}
+
+export interface HashtagsProps {
+    id: string | null;
+    hashtags: string[] | null;
 }

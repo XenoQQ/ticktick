@@ -141,6 +141,10 @@ const Textfield = styled.div<{ $checked: boolean }>`
     &:focus {
         outline: none;
     }
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.typography.fontSizeMobile};
+    }
 `;
 
 const DateContainer = styled.div`
