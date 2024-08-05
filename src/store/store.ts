@@ -9,7 +9,7 @@ export const store = configureStore({
     reducer: {
         todos: todoSlice,
         hashtags: hashtagSlice,
-        showSub: showSlice,
+        showTags: showSlice,
         options: optionsSlice,
     },
     middleware: (getDefaultMiddleware) =>

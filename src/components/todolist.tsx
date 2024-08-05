@@ -262,7 +262,6 @@ const TodoList: React.FC = () => {
                             }
                         }
 
-                        console.log(acc);
                         return acc;
                     },
                     {} as Record<string, TodoItemProps[]>,

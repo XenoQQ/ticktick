@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { styled, css } from 'styled-components';
-import { TodoItemProps } from '../controls/types';
+import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
+
 import { RootState, AppDispatch } from '../store/store';
 import { toggleDoneStatus, switchPriority, switchContent, deleteTodoFromFirebase, addTodo, switchTargetDate } from '../store/todoSlice';
 import { addTag } from '../store/hashtagSlice';
-import { v4 as uuidv4 } from 'uuid';
+import { TodoItemProps, VisibleState, VisibleStateKey } from '../controls/types';
+
 import PriorityMenu from './prioritymenu';
 import Datepicker from './datepicker';
 import HashtagSettings from './hashtagsettings';
@@ -14,21 +16,18 @@ import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
 import IconSub from '../assets/images/icon-sub.png';
+import Iconhash from '../assets/images/icon-hash.png';
 
 const Wrapper = styled.div`
     position: relative;
 
     display: flex;
-    height: auto;
-
-    padding: 13px 13px 13px 13px;
 
     border: none;
     border-radius: 5px;
 
     justify-content: space-between;
     align-items: center;
-    flex-direction: row;
     flex-wrap: wrap;
     flex-grow: 1;
 
@@ -49,11 +48,13 @@ const Wrapper = styled.div`
     }
 `;
 
-const MainContainer = styled.div`
+const TodoWrapper = styled.div`
     display: flex;
 
     width: 100%;
     height: 15px;
+
+    margin: 15px 0;
 
     justify-content: flex-start;
     align-items: center;
@@ -65,7 +66,7 @@ const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
     aspect-ratio: 1/1;
 
     margin-right: 10px;
-    margin-left: 5px;
+    margin-left: 15px;
 
     border: 1px solid;
     border-radius: 3px;
@@ -73,13 +74,13 @@ const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
         switch ($priority) {
             case 'none':
             default:
-                return '#535353';
+                return ({ theme }) => theme.colors.noPriority;
             case 'low':
-                return '#4772fa';
+                return ({ theme }) => theme.colors.lowPriority;
             case 'medium':
-                return '#FAA80C';
+                return ({ theme }) => theme.colors.mediumPriority;
             case 'high':
-                return '#D52b24';
+                return ({ theme }) => theme.colors.highPriority;
         }
     }};
 
@@ -89,6 +90,13 @@ const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
     &:hover {
         opacity: 0.7;
     }
+
+    ${({ $checked }) =>
+        $checked
+            ? css`
+                  opacity: 0.8;
+              `
+            : css``}
 
     &::before {
         content: '';
@@ -104,13 +112,13 @@ const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
             switch ($priority) {
                 case 'none':
                 default:
-                    return '#535353';
+                    return ({ theme }) => theme.colors.noPriority;
                 case 'low':
-                    return '#4772fa';
+                    return ({ theme }) => theme.colors.lowPriority;
                 case 'medium':
-                    return '#FAA80C';
+                    return ({ theme }) => theme.colors.mediumPriority;
                 case 'high':
-                    return '#D52b24';
+                    return ({ theme }) => theme.colors.highPriority;
             }
         }};
         transform: translate(-50%, -50%) rotate(35deg);
@@ -122,95 +130,103 @@ const Checkbox = styled.div<{ $checked: boolean; $priority: string }>`
 const Textfield = styled.div<{ $checked: boolean }>`
     display: flex;
     min-width: 20px;
-    height: 100%;
-
-    margin: 0 10px 0 0;
 
     background-color: transparent;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 14px;
-    color: ${({ $checked }) => ($checked ? '#535353' : '#bebebe')};
+    color: ${({ $checked }) => ($checked ? ({ theme }) => theme.colors.uiTextColor : ({ theme }) => theme.colors.activeTextColor)};
 
     text-decoration: ${({ $checked }) => ($checked ? 'line-through' : 'none')};
 
-    list-style: none;
     align-items: center;
 
     outline: none;
-    &:focus {
-        outline: none;
-    }
 
     @media (max-width: 768px) {
         font-size: ${({ theme }) => theme.typography.fontSizeMobile};
     }
 `;
 
-const DateContainer = styled.div`
+const DateContainer = styled.div<{ $activebutton: boolean }>`
     display: flex;
     width: auto;
-    height: 15px;
 
     margin-left: auto;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 12px;
-    color: #5c5c5c;
+    color: ${({ theme }) => theme.colors.uiTextColor};
 
     justify-content: center;
     align-items: center;
 
+    border-radius: 3px;
+
     cursor: pointer;
 
     &:hover {
-        color: #757575;
+        opacity: 0.7;
     }
 
     transition: 0.5s ease;
+
+    ${({ $activebutton }) =>
+        $activebutton
+            ? css`
+                  background-color: ${({ theme }) => theme.colors.activeButtonBackground};
+                  box-shadow: ${({ theme }) => theme.boxShadow.activeButton};
+              `
+            : css``}
 `;
 
 const DatePickerWrapper = styled.div`
     z-index: 9999;
 
     position: absolute;
-    right: 70px;
-    top: 145px;
-
-    height: 15px;
-    width: 15px;
+    right: -200px;
+    top: 30px;
 
     margin-right: 3px;
+
+    @media (max-width: 768px) {
+        right: -5px;
+    }
 `;
 
 const OpenMenuButton = styled.div<{ $activebutton: boolean }>`
+    display: flex;
+
     height: 20px;
     aspect-ratio: 1/1;
 
-    margin-left: 10px;
+    margin: 0 10px;
 
     transition: 0.5s ease;
 
     cursor: pointer;
 
-    ${({ $activebutton }) =>
-        $activebutton
-            ? css`
-                  background-color: #2e2e2e;
-                  box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
-              `
-            : css`
-                  background-color: none;
-              `}
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 3px;
 
     &:hover {
         opacity: 0.7;
     }
+
+    ${({ $activebutton }) =>
+        $activebutton
+            ? css`
+                  background-color: ${({ theme }) => theme.colors.activeButtonBackground};
+                  box-shadow: ${({ theme }) => theme.boxShadow.activeButton};
+              `
+            : css``}
 `;
 
 const OpenMenuButtonImg = styled.img<{ $activebutton: boolean }>`
-    width: 100%;
-    height: 100%;
+    width: 120%;
+    height: 120%;
 
     transition: 0.5s ease;
 
@@ -224,19 +240,18 @@ const OpenMenuButtonImg = styled.img<{ $activebutton: boolean }>`
               `}
 `;
 
-const MenuContainer = styled.div<{ $issub: boolean }>`
+const MenuWrapper = styled.div<{ $issub: boolean }>`
     z-index: 9999;
-
     position: absolute;
+    top: 30px;
     ${({ $issub }) =>
         $issub
             ? css`
-                  right: -52px;
+                  right: -60px;
               `
             : css`
-                  right: -115px;
+                  right: -125px;
               `}
-    top: 25px;
 
     display: flex;
     width: auto;
@@ -244,24 +259,30 @@ const MenuContainer = styled.div<{ $issub: boolean }>`
 
     padding: 5px;
 
-    background-color: #202020;
-    border: 1px solid #535353;
+    background-color: ${({ theme }) => theme.colors.backgroundColor};
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: ${({ theme }) => theme.boxShadow.default};
 
     flex-direction: row;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+        right: 0px;
+    }
 `;
 
-const PriorityButton = styled.div<{ $activebutton: boolean }>`
+const OpenPriorityMenuButton = styled.div<{ $activebutton: boolean }>`
     display: flex;
 
     width: 25px;
-    height: 25px;
+    aspect-ratio: 1/1;
 
-    border: 1px solid #535353;
+    margin-right: 5px;
+
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
 
     justify-content: center;
@@ -272,19 +293,17 @@ const PriorityButton = styled.div<{ $activebutton: boolean }>`
     ${({ $activebutton }) =>
         $activebutton
             ? css`
-                  background-color: #2e2e2e;
-                  box-shadow: 0 0 10px rgba(83, 83, 83, 0.498);
+                  background-color: ${({ theme }) => theme.colors.activeButtonBackground};
+                  box-shadow: ${({ theme }) => theme.boxShadow.activeButton};
               `
-            : css`
-                  background-color: none;
-              `}
+            : css``}
 
     &:hover {
         opacity: 0.7;
     }
 `;
 
-const PriorityButtonImg = styled.img<{ $activebutton: boolean }>`
+const OpenPriorityMenuButtonImg = styled.img<{ $activebutton: boolean }>`
     width: 70%;
     height: 90%;
 
@@ -300,23 +319,63 @@ const PriorityButtonImg = styled.img<{ $activebutton: boolean }>`
               `}
 `;
 
-const PriorityMenuWrapper = styled.div`
-    z-index: 9999;
+const HashtagButton = styled.div<{ $activebutton: boolean }>`
+    display: flex;
+    height: 25px;
+    aspect-ratio: 1/1;
 
-    position: absolute;
-    top: 25px;
-    right: 105px;
+    margin-right: 5px;
+
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
+    border-radius: 3px;
+
+    justify-content: center;
+    align-items: center;
+
+    transition: 0.5s ease;
+
+    cursor: pointer;
+
+    transition: 0.5s ease;
+
+    ${({ $activebutton }) =>
+        $activebutton
+            ? css`
+                  background-color: ${({ theme }) => theme.colors.activeButtonBackground};
+                  box-shadow: ${({ theme }) => theme.boxShadow.activeButton};
+              `
+            : css``}
+
+    &:hover {
+        opacity: 0.7;
+    }
+`;
+
+const HashtagButtonImg = styled.img<{ $activebutton: boolean }>`
+    width: 100%;
+    aspect-ratio: 1/1;
+
+    transition: 0.5s ease;
+
+    ${({ $activebutton }) =>
+        $activebutton
+            ? css`
+                  transform: rotate(-90deg);
+              `
+            : css`
+                  transform: rotate(90deg);
+              `}
 `;
 
 const SubtaskButton = styled.div`
     display: flex;
 
     width: 25px;
-    height: 25px;
+    aspect-ratio: 1/1;
 
-    margin-left: 5px;
+    margin-right: 5px;
 
-    border: 1px solid #535353;
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
     background: no-repeat center/80% url(${IconSub});
 
@@ -334,11 +393,9 @@ const DeleteButton = styled.div`
     display: flex;
 
     width: 25px;
-    height: 25px;
+    aspect-ratio: 1/1;
 
-    margin-left: 5px;
-
-    border: 1px solid #535353;
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
     background: no-repeat center/80% url(${IconDelete});
 
@@ -352,13 +409,34 @@ const DeleteButton = styled.div`
     }
 `;
 
-const TagsContainer = styled.div`
+const HashtagSettingsWrapper = styled.div`
+    z-index: 9999;
+    position: absolute;
+    right: -90px;
+    top: 25px;
+
+    @media (max-width: 768px) {
+        right: -5px;
+    }
+`;
+
+const PriorityMenuWrapper = styled.div`
+    z-index: 9999;
+    position: absolute;
+    right: -40px;
+    top: 25px;
+
+    @media (max-width: 768px) {
+        right: -5px;
+    }
+`;
+
+const TagsWrapper = styled.div`
     display: flex;
     width: 100%;
     height: 15px;
 
-    margin-top: 13px;
-    margin-left: 31px;
+    margin: -5px 0 10px 45px;
 
     justify-content: flex-start;
     align-items: center;
@@ -369,116 +447,50 @@ const Tag = styled.div`
     width: auto;
     height: 15px;
 
-    margin-right: 3px;
+    margin-right: 5px;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 12px;
-    color: #faa70ca1;
+    color: ${({ theme }) => theme.colors.tagColor};
 
     justify-content: center;
     align-items: center;
 `;
 
+const MemoizedHashtagSettings = React.memo(HashtagSettings);
+const MemoizedPriorityMenu = React.memo(PriorityMenu);
+
 const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
-    const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
-    const [priorityMenuContainerVisible, setPriorityMenuContainerVisible] = React.useState<boolean>(false);
-    const [calendarVisible, setCalendarVisible] = React.useState<boolean>(false);
+    const [visibleState, setVisibleState] = useState<VisibleState>({
+        menu: false,
+        priorityMenu: false,
+        datepicker: false,
+        hashtagSettings: false,
+    });
 
-    const menuContainerRef = React.useRef<HTMLDivElement>(null);
-    const openMenuButtonRef = React.useRef<HTMLDivElement>(null);
-    const editableDivRef = React.useRef<HTMLDivElement>(null);
-    const dateContainerRef = React.useRef<HTMLDivElement>(null);
-    const datePickerRef = React.useRef<HTMLDivElement>(null);
+    const editableDivRef = useRef<HTMLDivElement>(null);
+    const openMenuButtonRef = useRef<HTMLDivElement>(null);
+    const menuWrapperRef = useRef<HTMLDivElement>(null);
+    const dateContainerRef = useRef<HTMLDivElement>(null);
+    const datePickerRef = useRef<HTMLDivElement>(null);
+    const hashtagButtonRef = useRef<HTMLDivElement>(null);
+    const hashtagSettingsWrapperRef = useRef<HTMLDivElement>(null);
+    const openPriorityMenuButtonRef = useRef<HTMLDivElement>(null);
+    const priporityMenuWrapperRef = useRef<HTMLDivElement>(null);
 
-    const showSub = useSelector((state: RootState) => state.showSub);
+    const showTags = useSelector((state: RootState) => state.showTags);
 
     const dispatch: AppDispatch = useDispatch();
 
-    const handleDelete = () => {
-        setMenuVisible(false);
-        dispatch(deleteTodoFromFirebase(data.id));
+    const toggleVisibility = (key: VisibleStateKey): void => {
+        setVisibleState((prevstate) => ({ ...prevstate, [key]: !prevstate[key] }));
     };
 
-    const monthNames = [
-        'января',
-        'февраля',
-        'марта',
-        'апреля',
-        'мая',
-        'июня',
-        'июля',
-        'августа',
-        'сентября',
-        'октября',
-        'ноября',
-        'декабря',
-    ];
-
-    const formatDate = (dateString: string | null) => {
-        if (!dateString) {
-            return 'Без даты';
-        }
-
-        const date = new Date(dateString);
-
-        const day = String(date.getDate());
-        const month = String(monthNames[date.getMonth() + 1]);
-
-        return `${day} ${month}`;
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            menuContainerRef.current &&
-            !menuContainerRef.current.contains(event.target as Node) &&
-            openMenuButtonRef.current &&
-            !openMenuButtonRef.current.contains(event.target as Node)
-        ) {
-            setMenuVisible(false);
-            setPriorityMenuContainerVisible(false);
-        }
-
-        if (
-            dateContainerRef.current &&
-            !dateContainerRef.current.contains(event.target as Node) &&
-            datePickerRef.current &&
-            !datePickerRef.current.contains(event.target as Node)
-        ) {
-            setCalendarVisible(false);
-        }
-    };
-
-    React.useEffect(() => {
-        if (menuVisible) {
-            document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [menuVisible]);
-
-    React.useEffect(() => {
-        if (calendarVisible) {
-            document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [calendarVisible]);
-
-    const handleComplete = () => {
+    const handleComplete = (): void => {
         dispatch(toggleDoneStatus(data.id));
     };
 
-    const handlePrioritySelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
-        dispatch(switchPriority({ id: data.id, priority }));
-    };
-
-    const handleContentChange = (event?: React.FocusEvent<HTMLDivElement>) => {
+    const handleContentChange = (event?: React.FocusEvent<HTMLDivElement>): void => {
         const updatedContent = event?.currentTarget.textContent || editableDivRef.current?.textContent;
 
         if (updatedContent) {
@@ -497,7 +509,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
         if (event.key === 'Enter') {
             event.preventDefault();
             if (editableDivRef.current) {
@@ -506,7 +518,51 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }
     };
 
-    const handleAddTodo = async () => {
+    const formatDate = (dateString: string | null): string => {
+        const monthNames = [
+            'января',
+            'февраля',
+            'марта',
+            'апреля',
+            'мая',
+            'июня',
+            'июля',
+            'августа',
+            'сентября',
+            'октября',
+            'ноября',
+            'декабря',
+        ];
+
+        if (!dateString) {
+            return 'Без даты';
+        }
+
+        const date = new Date(dateString);
+
+        const day = String(date.getDate());
+        const month = String(monthNames[date.getMonth() + 1]);
+
+        return `${day} ${month}`;
+    };
+
+    const handleDateSelect = useCallback(
+        (date: Date | null): void => {
+            dispatch(switchTargetDate({ id: data.id, targetDate: date?.toString() ?? null }));
+            setVisibleState((prevstate) => ({ ...prevstate, datepicker: false }));
+        },
+        [dispatch, data.id],
+    );
+
+    const handlePrioritySelect = useCallback(
+        (priority: 'none' | 'low' | 'medium' | 'high'): void => {
+            dispatch(switchPriority({ id: data.id, priority }));
+            setVisibleState((prevstate) => ({ ...prevstate, menu: false, priorityMenu: false, hashtagSettings: false }));
+        },
+        [dispatch, data.id],
+    );
+
+    const handleAddTodo = async (): Promise<void> => {
         const newTodo: TodoItemProps = {
             key: uuidv4(),
             data: {
@@ -522,11 +578,41 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
                 parentId: data.id,
             },
         };
-
         dispatch(addTodo(newTodo));
     };
 
-    const handleClickInside = () => {
+    const handleDelete = (): void => {
+        setVisibleState({ ...visibleState, menu: false, priorityMenu: false, hashtagSettings: false });
+        dispatch(deleteTodoFromFirebase(data.id));
+    };
+
+    const isClickedOutside = (event: MouseEvent, refs: React.RefObject<HTMLElement>[]): boolean => {
+        return refs.every((ref) => ref.current && !ref.current.contains(event.target as Node));
+    };
+
+    const handleClickOutside = useCallback(
+        (event: MouseEvent) => {
+            if (isClickedOutside(event, [dateContainerRef, datePickerRef])) {
+                setVisibleState({ ...visibleState, datepicker: false });
+            }
+
+            if (isClickedOutside(event, [menuWrapperRef, openMenuButtonRef])) {
+                setVisibleState({ ...visibleState, menu: false, priorityMenu: false, hashtagSettings: false });
+                return;
+            }
+
+            if (isClickedOutside(event, [openPriorityMenuButtonRef, priporityMenuWrapperRef])) {
+                setVisibleState({ ...visibleState, priorityMenu: false });
+            }
+
+            if (isClickedOutside(event, [hashtagButtonRef, hashtagSettingsWrapperRef])) {
+                setVisibleState({ ...visibleState, hashtagSettings: false });
+            }
+        },
+        [visibleState],
+    );
+
+    const handleClickInside = (): void => {
         if (editableDivRef.current) {
             const range = document.createRange();
             const selection = window.getSelection();
@@ -538,76 +624,89 @@ const TodoItem: React.FC<TodoItemProps> = ({ data }) => {
         }
     };
 
-    const handleDateSelect = (date: Date | null) => {
-        dispatch(switchTargetDate({ id: data.id, targetDate: date?.toString() ?? null }));
-        setCalendarVisible(false);
-    };
+    useEffect(() => {
+        const isAnyvisible = Object.values(visibleState).some((value) => value === true);
+
+        if (isAnyvisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [visibleState]);
 
     return (
-        <>
-            <Wrapper onDoubleClick={() => handleClickInside()}>
-                <MainContainer>
-                    <Checkbox $checked={data.doneStatus} $priority={data.priority} onClick={() => handleComplete()} />
-                    <Textfield
-                        $checked={data.doneStatus}
-                        ref={editableDivRef}
-                        onKeyDown={handleKeyDown}
-                        contentEditable
-                        onBlur={handleContentChange}
-                        suppressContentEditableWarning
-                    >
-                        {data.content}
-                    </Textfield>
-                    <DateContainer onClick={() => setCalendarVisible((prevstate) => !prevstate)} ref={dateContainerRef}>
-                        {formatDate(data.targetDate)}
-                    </DateContainer>
-                    {calendarVisible && (
-                        <DatePickerWrapper ref={datePickerRef}>
-                            <Datepicker value={data.targetDate ? new Date(data.targetDate) : null} onChange={handleDateSelect} />
-                        </DatePickerWrapper>
-                    )}
-                    <OpenMenuButton
-                        onClick={() => setMenuVisible((prevstate) => !prevstate)}
-                        $activebutton={menuVisible}
-                        ref={openMenuButtonRef}
-                    >
-                        <OpenMenuButtonImg src={IconSettings} $activebutton={menuVisible} />
-                    </OpenMenuButton>
-                    {menuVisible && (
-                        <>
-                            <MenuContainer ref={menuContainerRef} $issub={!!data.parentId}>
-                                <PriorityButton
-                                    $activebutton={priorityMenuContainerVisible}
-                                    onClick={() => setPriorityMenuContainerVisible((prevstate) => !prevstate)}
-                                >
-                                    <PriorityButtonImg $activebutton={priorityMenuContainerVisible} src={IconArrows} />
-                                </PriorityButton>
-                                {!data.parentId && <HashtagSettings id={data.id} hashtags={data.tags} />}
-                                {!data.parentId && <SubtaskButton onClick={() => handleAddTodo()} />}
-                                <DeleteButton onClick={() => handleDelete()} />
-                                {priorityMenuContainerVisible && (
-                                    <PriorityMenuWrapper>
-                                        <PriorityMenu
-                                            onSelect={handlePrioritySelect}
-                                            onClose={() => {
-                                                setPriorityMenuContainerVisible(false), setMenuVisible(false);
-                                            }}
-                                        />
-                                    </PriorityMenuWrapper>
-                                )}
-                            </MenuContainer>
-                        </>
-                    )}
-                </MainContainer>
-                {showSub && !data.parentId && (
-                    <TagsContainer>
-                        {data.tags.map((tag) => (
-                            <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
-                        ))}
-                    </TagsContainer>
+        <Wrapper onDoubleClick={() => handleClickInside()}>
+            <TodoWrapper>
+                <Checkbox $checked={data.doneStatus} $priority={data.priority} onClick={() => handleComplete()} />
+                <Textfield
+                    $checked={data.doneStatus}
+                    ref={editableDivRef}
+                    onKeyDown={handleKeyDown}
+                    contentEditable
+                    onBlur={handleContentChange}
+                    suppressContentEditableWarning
+                >
+                    {data.content}
+                </Textfield>
+                <DateContainer
+                    $activebutton={visibleState.datepicker}
+                    onClick={() => toggleVisibility('datepicker')}
+                    ref={dateContainerRef}
+                >
+                    {formatDate(data.targetDate)}
+                </DateContainer>
+                {visibleState.datepicker && (
+                    <DatePickerWrapper ref={datePickerRef}>
+                        <Datepicker value={data.targetDate ? new Date(data.targetDate) : null} onChange={handleDateSelect} />
+                    </DatePickerWrapper>
                 )}
-            </Wrapper>
-        </>
+                <OpenMenuButton $activebutton={visibleState.menu} onClick={() => toggleVisibility('menu')} ref={openMenuButtonRef}>
+                    <OpenMenuButtonImg src={IconSettings} $activebutton={visibleState.menu} />
+                </OpenMenuButton>
+                {visibleState.menu && (
+                    <MenuWrapper ref={menuWrapperRef} $issub={!!data.parentId}>
+                        <OpenPriorityMenuButton
+                            ref={openPriorityMenuButtonRef}
+                            $activebutton={visibleState.priorityMenu}
+                            onClick={() => toggleVisibility('priorityMenu')}
+                        >
+                            <OpenPriorityMenuButtonImg $activebutton={visibleState.priorityMenu} src={IconArrows} />
+                        </OpenPriorityMenuButton>
+                        {!data.parentId && (
+                            <HashtagButton
+                                ref={hashtagButtonRef}
+                                $activebutton={visibleState.hashtagSettings}
+                                onClick={() => toggleVisibility('hashtagSettings')}
+                            >
+                                <HashtagButtonImg $activebutton={visibleState.hashtagSettings} src={Iconhash} />
+                            </HashtagButton>
+                        )}
+                        {!data.parentId && <SubtaskButton onClick={() => handleAddTodo()} />}
+                        <DeleteButton onClick={() => handleDelete()} />
+                        {visibleState.priorityMenu && (
+                            <PriorityMenuWrapper ref={priporityMenuWrapperRef}>
+                                <MemoizedPriorityMenu onSelect={handlePrioritySelect} />
+                            </PriorityMenuWrapper>
+                        )}
+                        {visibleState.hashtagSettings && (
+                            <HashtagSettingsWrapper ref={hashtagSettingsWrapperRef}>
+                                <MemoizedHashtagSettings id={data.id} hashtags={data.tags} />
+                            </HashtagSettingsWrapper>
+                        )}
+                    </MenuWrapper>
+                )}
+            </TodoWrapper>
+            {showTags && !data.parentId && (
+                <TagsWrapper>
+                    {data.tags.map((tag) => (
+                        <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
+                    ))}
+                </TagsWrapper>
+            )}
+        </Wrapper>
     );
 };
 

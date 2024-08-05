@@ -40,10 +40,10 @@ const AppBody = styled.div`
 
     @media (max-width: 768px) {
         width: 95vw;
+        padding: 0 2.5vw;
         min-height: 100vh;
         top: 0px;
         border-radius: 0px;
-        padding: 0 2.5vw;
     }
 `;
 

@@ -178,12 +178,13 @@ const OpenPriorityMenuButtonImg = styled.img<{ $activebutton: boolean }>`
 `;
 
 const PriorityMenuWrapper = styled.div`
+    z-index: 9999;
     position: absolute;
-    right: 15px;
+    right: -130px;
     top: 25px;
 
     @media (max-width: 768px) {
-        right: 140px;
+        right: -5px;
         top: 30px;
     }
 `;
@@ -319,7 +320,7 @@ const TodoInput: React.FC = () => {
             </OpenPriorityMenuButton>
             {priorityMenuContainerVisible && (
                 <PriorityMenuWrapper ref={priorityMenuWrapperRef}>
-                    <MemoizedPriorityMenu onSelect={handlePrioritySelect} onClose={() => setPriorityMenuContainerVisible(false)} />
+                    <MemoizedPriorityMenu onSelect={handlePrioritySelect} />
                 </PriorityMenuWrapper>
             )}
         </Wrapper>

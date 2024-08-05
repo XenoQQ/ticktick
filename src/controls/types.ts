@@ -30,7 +30,6 @@ export interface DateProps {
 
 export interface PriorityMenuProps {
     onSelect: (priority: 'none' | 'low' | 'medium' | 'high') => void;
-    onClose: () => void;
 }
 
 export interface TitleMap {
@@ -92,6 +91,7 @@ export interface Colors {
     uiTextColor: string;
     defaultBorder: string;
     activeButtonBackground: string;
+    tagColor: string;
 }
 
 export interface BoxShadow {
@@ -113,3 +113,12 @@ export interface HashtagsProps {
     id: string | null;
     hashtags: string[] | null;
 }
+
+export interface VisibleState {
+    menu: boolean;
+    priorityMenu: boolean;
+    datepicker: boolean;
+    hashtagSettings: boolean;
+}
+
+export type VisibleStateKey = keyof VisibleState;

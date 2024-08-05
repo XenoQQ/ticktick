@@ -1,29 +1,28 @@
 import React from 'react';
 import { styled } from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { AppDispatch, RootState } from '../store/store';
-import { useSelector, useDispatch } from 'react-redux';
-import IconDelete from '../assets/images/icon-delete-2.png';
 import { deleteHashTagFromFirebase } from '../store/hashtagSlice';
 import { deleteTag } from '../store/todoSlice';
 
 import { HashtagsProps, TodoItemProps } from '../controls/types';
 
+import IconDelete from '../assets/images/icon-delete-2.png';
+
 const Wrapper = styled.div`
     position: relative;
-    right: -155px;
-    top: 20px;
 
     display: flex;
-    width: 150px;
-    min-height: 28px;
+    min-width: 150px;
+    min-height: 30px;
 
-    padding: 0 5px 0 5px;
+    padding: 0 5px;
 
-    background-color: #202020;
-    border: 1px solid #535353;
+    background-color: ${({ theme }) => theme.colors.backgroundColor};
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: ${({ theme }) => theme.boxShadow.default};
 
     flex-direction: column;
     align-items: center;
@@ -33,7 +32,7 @@ const Wrapper = styled.div`
 const TagWrapper = styled.div`
     display: flex;
     width: 100%;
-    height: 18px;
+    height: 20px;
 
     padding: 5px;
 
@@ -49,14 +48,13 @@ const TagWrapper = styled.div`
 
 const Tag = styled.div`
     display: flex;
-    width: auto;
-    height: 18px;
+    height: 20px;
 
     margin-right: 3px;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 14px;
-    color: #757575;
+    color: ${({ theme }) => theme.colors.uiTextColor};
 
     justify-content: center;
     align-items: center;
@@ -66,8 +64,8 @@ const DeleteButton = styled.div`
     z-index: 400;
 
     display: flex;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    aspect-ratio: 1/1;
 
     background: no-repeat center/70% url(${IconDelete});
 
@@ -79,9 +77,9 @@ const DeleteButton = styled.div`
 `;
 
 const HashtagSettings: React.FC<HashtagsProps> = ({ id, hashtags }) => {
-    const isLocal: boolean = id !== null ? true : false;
+    const isLocal = id !== null;
 
-    const tags: string[] = hashtags !== null ? hashtags : useSelector((state: RootState) => state.hashtags.tags);
+    const tags = hashtags ?? useSelector((state: RootState) => state.hashtags.tags);
     const todos: TodoItemProps[] = useSelector((state: RootState) => state.todos.todos);
 
     const dispatch: AppDispatch = useDispatch();

@@ -1,21 +1,35 @@
-import React, { forwardRef } from 'react';
+import React, { useCallback } from 'react';
 import { styled } from 'styled-components';
-import { PriorityMenuProps } from '../controls/types';
 
-const PriorityMenuContainer = styled.div`
-    z-index: 9999;
-    position: absolute;
+import { PriorityMenuProps, Colors } from '../controls/types';
+
+const priorityColor = (priority: 'high' | 'medium' | 'low' | 'none', colors: Colors) => {
+    switch (priority) {
+        case 'high':
+            return colors.highPriority;
+        case 'medium':
+            return colors.mediumPriority;
+        case 'low':
+            return colors.lowPriority;
+        case 'none':
+        default:
+            return colors.noPriority;
+    }
+};
+
+const Wrapper = styled.div`
+    position: relative;
 
     display: flex;
-    width: 134px;
+    width: 135px;
     height: 55px;
 
-    padding: 0px 5px 0 5px;
+    padding: 0px 5px;
 
-    background-color: #202020;
-    border: 1px solid #535353;
+    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
     border-radius: 3px;
-    box-shadow: 0 0 5px #0000007f;
+    background-color: ${({ theme }) => theme.colors.backgroundColor};
+    box-shadow: ${({ theme }) => theme.boxShadow.default};
 
     flex-direction: row;
     align-items: center;
@@ -23,52 +37,56 @@ const PriorityMenuContainer = styled.div`
     flex-wrap: wrap;
 `;
 
-const PriorityMenuContainerTitle = styled.div`
+const Title = styled.div`
     display: flex;
     width: 100%;
 
-    font-family: 'Ubuntu', sans-serif;
+    font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: 12px;
-    color: #757575;
+    color: ${({ theme }) => theme.colors.uiTextColor};
 
     justify-content: center;
+    align-items: center;
 `;
 
-const PriorityMenuContainerButton = styled.div<{ $bocolor: string }>`
+const Button = styled.div<{ $priority: 'high' | 'medium' | 'low' | 'none' }>`
     display: flex;
     width: 25px;
-    height: 25px;
+    aspect-ratio: 1/1;
 
-    background-color: #202020;
-    border: 2px solid ${({ $bocolor }) => $bocolor};
-    border-radius: 4px;
+    background-color: ${({ theme }) => theme.colors.backgroundColor};
+    border: 2px solid ${({ $priority, theme }) => priorityColor($priority, theme.colors)};
+    border-radius: 5px;
 
     cursor: pointer;
 
     transition: 0.5s ease;
 
     &:hover {
-        box-shadow: ${({ $bocolor }) => ($bocolor !== '#3b3b3b' ? `0 0 5px ${$bocolor}, inset 0 0 5px ${$bocolor}` : 'none')};
+        box-shadow: ${({ $priority, theme }) =>
+            $priority !== 'none'
+                ? `0 0 5px ${priorityColor($priority, theme.colors)}, inset 0 0 5px ${priorityColor($priority, theme.colors)}`
+                : 'none'};
     }
 `;
 
-const PriorityMenu = forwardRef<HTMLDivElement, PriorityMenuProps>(({ onSelect, onClose }, ref) => {
-    const handleSelect = (priority: 'none' | 'low' | 'medium' | 'high') => {
-        onSelect(priority);
-        onClose();
-    };
+const PriorityMenu: React.FC<PriorityMenuProps> = ({ onSelect }) => {
+    const handleSelect = useCallback(
+        (priority: 'none' | 'low' | 'medium' | 'high'): void => {
+            onSelect(priority);
+        },
+        [onSelect],
+    );
 
     return (
-        <PriorityMenuContainer ref={ref}>
-            <PriorityMenuContainerTitle>Приоритет</PriorityMenuContainerTitle>
-            <PriorityMenuContainerButton $bocolor="#D52b24" onClick={() => handleSelect('high')} />
-            <PriorityMenuContainerButton $bocolor="#FAA80C" onClick={() => handleSelect('medium')} />
-            <PriorityMenuContainerButton $bocolor="#4772fa" onClick={() => handleSelect('low')} />
-            <PriorityMenuContainerButton $bocolor="#3b3b3b" onClick={() => handleSelect('none')} />
-        </PriorityMenuContainer>
+        <Wrapper>
+            <Title>Приоритет</Title>
+            <Button $priority="high" onClick={() => handleSelect('high')} />
+            <Button $priority="medium" onClick={() => handleSelect('medium')} />
+            <Button $priority="low" onClick={() => handleSelect('low')} />
+            <Button $priority="none" onClick={() => handleSelect('none')} />
+        </Wrapper>
     );
-});
-
-PriorityMenu.displayName = 'PriorityMenu';
+};
 
 export default PriorityMenu;

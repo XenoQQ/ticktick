@@ -105,6 +105,17 @@ const HashtagButtonImg = styled.img<{ $activebutton: boolean }>`
               `}
 `;
 
+const HashtagSettingsWrapper = styled.div`
+    z-index: 9999;
+    position: absolute;
+    top: 20px;
+    right: -125px;
+
+    @media (max-width: 768px) {
+        right: -5px;
+    }
+`;
+
 const OptionsButton = styled.div<{ $activebutton: boolean }>`
     height: 100%;
     aspect-ratio: 1/1;
@@ -277,10 +288,6 @@ const OptionButton = styled.button`
     }
 `;
 
-const HashtagSettingsWrapper = styled.div`
-    z-index: 1;
-`;
-
 const MemoizedHashtagSettings = React.memo(HashtagSettings);
 
 const TodoToolbar: React.FC = () => {
@@ -298,7 +305,7 @@ const TodoToolbar: React.FC = () => {
     const hashtagButtonRef = useRef<HTMLDivElement>(null);
     const hashtagsSettingsWrapperRef = useRef<HTMLDivElement>(null);
 
-    const showSub: boolean = useSelector((state: RootState) => state.showSub);
+    const showSub: boolean = useSelector((state: RootState) => state.showTags);
 
     const dispatch = useDispatch<AppDispatch>();
 
@@ -334,29 +341,32 @@ const TodoToolbar: React.FC = () => {
         }
     };
 
-    const handleClickOutside = useCallback((event: MouseEvent): void => {
-        if (
-            optionsButtonRef.current &&
-            !optionsButtonRef.current.contains(event.target as Node) &&
-            optionsWrapperRef.current &&
-            !optionsWrapperRef.current.contains(event.target as Node)
-        ) {
-            setVisibleCase({
-                optionsWrapperVisible: false,
-                sortWrapperVisible: false,
-                groupWrapperVisible: false,
-            });
-        }
+    const handleClickOutside = useCallback(
+        (event: MouseEvent): void => {
+            if (
+                optionsButtonRef.current &&
+                !optionsButtonRef.current.contains(event.target as Node) &&
+                optionsWrapperRef.current &&
+                !optionsWrapperRef.current.contains(event.target as Node)
+            ) {
+                setVisibleCase({
+                    optionsWrapperVisible: false,
+                    sortWrapperVisible: false,
+                    groupWrapperVisible: false,
+                });
+            }
 
-        if (
-            hashtagButtonRef.current &&
-            !hashtagButtonRef.current.contains(event.target as Node) &&
-            hashtagsSettingsWrapperRef.current &&
-            !hashtagsSettingsWrapperRef.current.contains(event.target as Node)
-        ) {
-            setHashtagSettingsVisible(false);
-        }
-    }, []);
+            if (
+                hashtagButtonRef.current &&
+                !hashtagButtonRef.current.contains(event.target as Node) &&
+                hashtagsSettingsWrapperRef.current &&
+                !hashtagsSettingsWrapperRef.current.contains(event.target as Node)
+            ) {
+                setHashtagSettingsVisible(false);
+            }
+        },
+        [visibleCase],
+    );
 
     useEffect(() => {
         if (visibleCase.optionsWrapperVisible || hashtagSettingsVisible) {

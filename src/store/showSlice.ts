@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = false;
 
 const showSlice = createSlice({
-    name: 'showSub',
+    name: 'showTags',
     initialState,
     reducers: {
         switchShow: (state) => {
