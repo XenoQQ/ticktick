@@ -229,7 +229,8 @@ const TodoInput: React.FC = () => {
                 timeOfCreation: new Date().toString(),
                 timeOfCompletion: null,
                 targetDate: targetDateRef.current?.toString() ?? null,
-                parentId: null,
+                children: [],
+                isSub: false,
             },
         };
 

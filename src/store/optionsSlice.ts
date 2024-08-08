@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SortCase, GroupCase } from '../controls/types';
+import { SortCase, GroupCase, Options } from '../controls/types';
 
-const initialState = { groupOption: 'none', sortOption: 'none' };
+const initialState: Options = { groupOption: 'none', sortOption: 'none', showTags: false };
 
 const optionsSlice = createSlice({
     name: 'options',
@@ -13,8 +13,11 @@ const optionsSlice = createSlice({
         switchSortCase: (state, action: PayloadAction<SortCase>) => {
             state.sortOption = action.payload;
         },
+        switchShow: (state) => {
+            state.showTags = !state.showTags;
+        },
     },
 });
 
-export const { switchGroupCase, switchSortCase } = optionsSlice.actions;
+export const { switchGroupCase, switchSortCase, switchShow } = optionsSlice.actions;
 export default optionsSlice.reducer;

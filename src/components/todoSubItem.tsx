@@ -1,22 +1,17 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { styled, css } from 'styled-components';
-import { v4 as uuidv4 } from 'uuid';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { RootState, AppDispatch } from '../store/store';
-import { updateTodo, deleteTodoFromFirebase, addSubTodo } from '../store/todoSlice';
-import { addTag } from '../store/hashtagSlice';
-import { TodoItemData, TodoSubItemProps, VisibleState, VisibleStateKey } from '../controls/types';
+import { AppDispatch } from '../store/store';
+import { updateSubTodo, deleteTodoFromFirebase } from '../store/todoSlice';
+import { TodoSubItemData, VisibleState, VisibleStateKey } from '../controls/types';
 
 import PriorityMenu from './prioritymenu';
 import Datepicker from './datepicker';
-import HashtagSettings from './hashtagsettings';
 
 import IconSettings from '../assets/images/icon-menu.png';
 import IconDelete from '../assets/images/icon-delete.png';
 import IconArrows from '../assets/images/arrow-down.png';
-import IconSub from '../assets/images/icon-sub.png';
-import Iconhash from '../assets/images/icon-hash.png';
 
 const Wrapper = styled.div`
     position: relative;
@@ -244,7 +239,7 @@ const MenuWrapper = styled.div`
     z-index: 9999;
     position: absolute;
     top: 30px;
-    right: -125px;
+    right: -60px;
 
     display: flex;
     width: auto;
@@ -312,76 +307,6 @@ const OpenPriorityMenuButtonImg = styled.img<{ $activebutton: boolean }>`
               `}
 `;
 
-const HashtagButton = styled.div<{ $activebutton: boolean }>`
-    display: flex;
-    height: 25px;
-    aspect-ratio: 1/1;
-
-    margin-right: 5px;
-
-    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
-    border-radius: 3px;
-
-    justify-content: center;
-    align-items: center;
-
-    transition: 0.5s ease;
-
-    cursor: pointer;
-
-    transition: 0.5s ease;
-
-    ${({ $activebutton }) =>
-        $activebutton
-            ? css`
-                  background-color: ${({ theme }) => theme.colors.activeButtonBackground};
-                  box-shadow: ${({ theme }) => theme.boxShadow.activeButton};
-              `
-            : css``}
-
-    &:hover {
-        opacity: 0.7;
-    }
-`;
-
-const HashtagButtonImg = styled.img<{ $activebutton: boolean }>`
-    width: 100%;
-    aspect-ratio: 1/1;
-
-    transition: 0.5s ease;
-
-    ${({ $activebutton }) =>
-        $activebutton
-            ? css`
-                  transform: rotate(-90deg);
-              `
-            : css`
-                  transform: rotate(90deg);
-              `}
-`;
-
-const SubtaskButton = styled.div`
-    display: flex;
-
-    width: 25px;
-    aspect-ratio: 1/1;
-
-    margin-right: 5px;
-
-    border: 1px solid ${({ theme }) => theme.colors.defaultBorder};
-    border-radius: 3px;
-    background: no-repeat center/80% url(${IconSub});
-
-    justify-content: center;
-    align-items: center;
-
-    cursor: pointer;
-
-    &:hover {
-        opacity: 0.7;
-    }
-`;
-
 const DeleteButton = styled.div`
     display: flex;
 
@@ -402,17 +327,6 @@ const DeleteButton = styled.div`
     }
 `;
 
-const HashtagSettingsWrapper = styled.div`
-    z-index: 9999;
-    position: absolute;
-    right: -90px;
-    top: 25px;
-
-    @media (max-width: 768px) {
-        right: -5px;
-    }
-`;
-
 const PriorityMenuWrapper = styled.div`
     z-index: 9999;
     position: absolute;
@@ -424,36 +338,9 @@ const PriorityMenuWrapper = styled.div`
     }
 `;
 
-const TagsWrapper = styled.div`
-    display: flex;
-    width: 100%;
-    height: 15px;
-
-    margin: -5px 0 10px 45px;
-
-    justify-content: flex-start;
-    align-items: center;
-`;
-
-const Tag = styled.div`
-    display: flex;
-    width: auto;
-    height: 15px;
-
-    margin-right: 5px;
-
-    font-family: ${({ theme }) => theme.typography.fontFamily};
-    font-size: 12px;
-    color: ${({ theme }) => theme.colors.tagColor};
-
-    justify-content: center;
-    align-items: center;
-`;
-
-const MemoizedHashtagSettings = React.memo(HashtagSettings);
 const MemoizedPriorityMenu = React.memo(PriorityMenu);
 
-const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
+const TodoSubItem: React.FC<{ data: TodoSubItemData }> = ({ data }) => {
     const [visibleState, setVisibleState] = useState<VisibleState>({
         menu: false,
         priorityMenu: false,
@@ -466,12 +353,8 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
     const menuWrapperRef = useRef<HTMLDivElement>(null);
     const dateContainerRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
-    const hashtagButtonRef = useRef<HTMLDivElement>(null);
-    const hashtagSettingsWrapperRef = useRef<HTMLDivElement>(null);
     const openPriorityMenuButtonRef = useRef<HTMLDivElement>(null);
     const priporityMenuWrapperRef = useRef<HTMLDivElement>(null);
-
-    const showTags = useSelector((state: RootState) => state.options.showTags);
 
     const dispatch: AppDispatch = useDispatch();
 
@@ -480,21 +363,16 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
     };
 
     const handleComplete = (): void => {
-        dispatch(updateTodo({ updateType: 'doneStatus', id: data.id }));
+        dispatch(updateSubTodo({ updateType: 'doneStatus', parentId: data.parentId, id: data.id }));
     };
 
     const handleContentChange = (event?: React.FocusEvent<HTMLDivElement>): void => {
         const updatedContent = event?.currentTarget.textContent || editableDivRef.current?.textContent;
 
         if (updatedContent) {
-            const tags = updatedContent.match(/#[\p{L}\p{N}_]+/gu) ?? [];
             const contentWithoutTags = updatedContent.replace(/#[\p{L}\p{N}_]+/gu, '').trim();
 
-            const sortedTags = tags.sort((a, b) => a.localeCompare(b));
-
-            dispatch(updateTodo({ updateType: 'content', id: data.id, content: contentWithoutTags, tags: sortedTags }));
-
-            dispatch(addTag(sortedTags));
+            dispatch(updateSubTodo({ updateType: 'content', parentId: data.parentId, id: data.id, content: contentWithoutTags }));
 
             if (event?.currentTarget) {
                 event.currentTarget.textContent = contentWithoutTags;
@@ -541,7 +419,9 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
 
     const handleDateSelect = useCallback(
         (date: Date | null): void => {
-            dispatch(updateTodo({ updateType: 'targetDate', id: data.id, targetDate: date?.toString() ?? null }));
+            dispatch(
+                updateSubTodo({ updateType: 'targetDate', parentId: data.parentId, id: data.id, targetDate: date?.toString() ?? null }),
+            );
             setVisibleState((prevstate) => ({ ...prevstate, datepicker: false }));
         },
         [dispatch, data.id],
@@ -549,29 +429,11 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
 
     const handlePrioritySelect = useCallback(
         (priority: 'none' | 'low' | 'medium' | 'high'): void => {
-            dispatch(updateTodo({ updateType: 'priority', id: data.id, priority: priority }));
+            dispatch(updateSubTodo({ updateType: 'priority', parentId: data.parentId, id: data.id, priority }));
             setVisibleState((prevstate) => ({ ...prevstate, menu: false, priorityMenu: false, hashtagSettings: false }));
         },
         [dispatch, data.id],
     );
-
-    const handleAddSubTodo = async (): Promise<void> => {
-        const newTodo: TodoSubItemProps = {
-            key: uuidv4(),
-            data: {
-                id: uuidv4(),
-                parentId: data.id,
-                content: '',
-                priority: 'none',
-                doneStatus: false,
-                timeOfCreation: new Date().toString(),
-                timeOfCompletion: null,
-                targetDate: null,
-                isSub: true,
-            },
-        };
-        dispatch(addSubTodo(newTodo));
-    };
 
     const handleDelete = (): void => {
         setVisibleState({ ...visibleState, menu: false, priorityMenu: false, hashtagSettings: false });
@@ -595,10 +457,6 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
 
             if (isClickedOutside(event, [openPriorityMenuButtonRef, priporityMenuWrapperRef])) {
                 setVisibleState({ ...visibleState, priorityMenu: false });
-            }
-
-            if (isClickedOutside(event, [hashtagButtonRef, hashtagSettingsWrapperRef])) {
-                setVisibleState({ ...visibleState, hashtagSettings: false });
             }
         },
         [visibleState],
@@ -667,37 +525,17 @@ const TodoItem: React.FC<{ data: TodoItemData }> = ({ data }) => {
                         >
                             <OpenPriorityMenuButtonImg $activebutton={visibleState.priorityMenu} src={IconArrows} />
                         </OpenPriorityMenuButton>
-                        <HashtagButton
-                            ref={hashtagButtonRef}
-                            $activebutton={visibleState.hashtagSettings}
-                            onClick={() => toggleVisibility('hashtagSettings')}
-                        >
-                            <HashtagButtonImg $activebutton={visibleState.hashtagSettings} src={Iconhash} />
-                        </HashtagButton>
-                        <SubtaskButton onClick={() => handleAddSubTodo()} />
                         <DeleteButton onClick={() => handleDelete()} />
                         {visibleState.priorityMenu && (
                             <PriorityMenuWrapper ref={priporityMenuWrapperRef}>
                                 <MemoizedPriorityMenu onSelect={handlePrioritySelect} />
                             </PriorityMenuWrapper>
                         )}
-                        {visibleState.hashtagSettings && (
-                            <HashtagSettingsWrapper ref={hashtagSettingsWrapperRef}>
-                                <MemoizedHashtagSettings id={data.id} hashtags={data.tags} />
-                            </HashtagSettingsWrapper>
-                        )}
                     </MenuWrapper>
                 )}
             </TodoWrapper>
-            {showTags && (
-                <TagsWrapper>
-                    {data.tags.map((tag) => (
-                        <Tag key={tag}>{tag !== 'none' ? tag : 'Нет меток'}</Tag>
-                    ))}
-                </TagsWrapper>
-            )}
         </Wrapper>
     );
 };
 
-export default TodoItem;
+export default TodoSubItem;

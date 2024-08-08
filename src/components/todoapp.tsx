@@ -1,14 +1,13 @@
 import React from 'react';
 import { styled, keyframes } from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-import { AppDispatch, RootState } from '../store/store';
-import { fetchTodosFromFirebase, syncTodosWithFirebase } from '../store/todoSlice';
-import { fetchHashtagsFromFirebase, syncHashtagsWithFirebase } from '../store/hashtagSlice';
+import { RootState } from '../store/store';
 
 import TodoList from './todolist';
 import TodoInput from './todoinput';
 import TodoToolbar from './todotoolbar';
+import useFirebaseSync from './utils/useFirebaseSync';
 
 const spin = keyframes`
   0% {
@@ -79,30 +78,9 @@ const Spinner = styled.div`
 `;
 
 const TodoApp: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    useFirebaseSync();
+
     const { loading, error } = useSelector((state: RootState) => state.todos);
-    const todos = useSelector((state: RootState) => state.todos.todos);
-    const hashtags = useSelector((state: RootState) => state.hashtags.tags);
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            try {
-                dispatch(fetchTodosFromFirebase());
-                dispatch(fetchHashtagsFromFirebase());
-            } catch (err) {
-                console.error('Ошибка загрузки данных из БД:', err);
-            }
-        };
-        fetchData();
-    }, [dispatch]);
-
-    React.useEffect(() => {
-        dispatch(syncTodosWithFirebase(todos));
-    }, [todos, dispatch]);
-
-    React.useEffect(() => {
-        dispatch(syncHashtagsWithFirebase(hashtags));
-    }, [hashtags, dispatch]);
 
     if (error) {
         return <div>Error: {error}</div>;

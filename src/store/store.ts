@@ -2,14 +2,12 @@ import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import todoSlice from './todoSlice';
 import hashtagSlice from './hashtagSlice';
-import showSlice from './showSlice';
 import optionsSlice from './optionsSlice';
 
 export const store = configureStore({
     reducer: {
         todos: todoSlice,
         hashtags: hashtagSlice,
-        showTags: showSlice,
         options: optionsSlice,
     },
     middleware: (getDefaultMiddleware) =>

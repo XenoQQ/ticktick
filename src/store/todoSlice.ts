@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { TodoItemProps, TodosState, SwitchPriority, SwitchContent, SwitchTargetDate } from '../controls/types';
+import { TodosState, TodoItemProps, TodoSubItemProps, UpdateTodoProps, UpdateSubTodoProps } from '../controls/types';
 import { db } from '../index';
 import { collection, setDoc, getDocs, doc, query, where, deleteDoc } from 'firebase/firestore';
 
@@ -15,8 +15,7 @@ export const fetchTodosFromFirebase = createAsyncThunk<TodoItemProps[], void, { 
         try {
             const todosCollection = collection(db, 'todos');
             const todoSnapshot = await getDocs(todosCollection);
-            const todos = todoSnapshot.docs.map((doc) => doc.data() as TodoItemProps);
-            return todos;
+            return todoSnapshot.docs.map((doc) => doc.data() as TodoItemProps);
         } catch (error) {
             console.error('Error fetching todos from Firebase: ', error);
             return rejectWithValue('Failed to fetch todos');
@@ -29,10 +28,7 @@ export const syncTodosWithFirebase = createAsyncThunk<void, TodoItemProps[], { r
     async (todos, { rejectWithValue }) => {
         try {
             const todosCollection = collection(db, 'todos');
-            for (const todo of todos) {
-                const todoDoc = doc(todosCollection, todo.data.id);
-                await setDoc(todoDoc, todo);
-            }
+            await Promise.all(todos.map((todo) => setDoc(doc(todosCollection, todo.data.id), todo)));
         } catch (error) {
             console.error('Error syncing todos with Firebase: ', error);
             return rejectWithValue('Failed to sync todos');
@@ -77,60 +73,92 @@ const todoSlice = createSlice({
         addTodo: (state, action: PayloadAction<TodoItemProps>) => {
             state.todos.push(action.payload);
         },
-        toggleDoneStatus: (state, action: PayloadAction<string>) => {
-            const todo = state.todos.find((todo) => todo.data.id === action.payload);
-            if (todo) {
-                todo.data.doneStatus = !todo.data.doneStatus;
-                if (todo.data.parentId) {
-                    const parentTodo = state.todos.find((todos) => todos.data.id === todo.data.parentId);
-                    if (parentTodo?.data.doneStatus) {
-                        parentTodo.data.doneStatus = false;
-                    }
-                }
-                if (!todo.data.parentId) {
-                    const subTodos = state.todos.filter((subTodo) => subTodo.data.parentId === action.payload);
-                    subTodos?.forEach((subTodo) => {
-                        if (todo.data.doneStatus === true) {
-                            subTodo.data.doneStatus = true;
-                        }
-                    });
-                }
+        addSubTodo: (state, action: PayloadAction<TodoSubItemProps>) => {
+            const parentTodo = state.todos.find((todo) => todo.data.id === action.payload.data.parentId);
+            if (parentTodo) {
+                parentTodo.data.children.push(action.payload);
             }
         },
+        updateTodo: (state, action: PayloadAction<UpdateTodoProps>) => {
+            const updateType = action.payload.updateType;
+            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
+            switch (updateType) {
+                case 'doneStatus':
+                    if (todo) {
+                        const newStatus = !todo.data.doneStatus;
+                        todo.data.doneStatus = newStatus;
+                        if (newStatus === true) {
+                            todo.data.children?.forEach((child) => (child.data.doneStatus = true));
+                        }
+                    }
+                    break;
+                case 'priority':
+                    if (todo && action.payload.priority) {
+                        todo.data.priority = action.payload.priority;
+                    }
+                    break;
+                case 'content':
+                    if (todo && action.payload.content) {
+                        todo.data.content = action.payload.content;
+                        const tags = action.payload.tags;
+                        if (tags) {
+                            if (tags.length > 0) {
+                                const newTags = tags.filter((tag) => tag !== 'none' || !todo.data.tags.includes(tag));
+                                newTags.map((tag) => todo.data.tags.push(tag));
+                                const sortedNewTags = newTags.sort((a, b) => a.localeCompare(b));
+                                if (sortedNewTags.length === 0) {
+                                    sortedNewTags.push('none');
+                                }
+                                todo.data.tags = sortedNewTags;
+                            }
+                        }
+                    }
+
+                    break;
+                case 'targetDate':
+                    if (todo && action.payload.targetDate !== undefined) {
+                        todo.data.targetDate = action.payload.targetDate;
+                    }
+                    break;
+            }
+        },
+        updateSubTodo: (state, action: PayloadAction<UpdateSubTodoProps>) => {
+            const updateType = action.payload.updateType;
+            const parentTodo = state.todos.find((todo) => todo.data.id === action.payload.parentId);
+            const todo = parentTodo?.data.children.find((todo) => todo.data.id === action.payload.id);
+            switch (updateType) {
+                case 'doneStatus':
+                    if (todo) {
+                        const newStatus = !todo.data.doneStatus;
+                        todo.data.doneStatus = newStatus;
+                        if (newStatus === false && parentTodo?.data.doneStatus === true) {
+                            parentTodo.data.doneStatus = newStatus;
+                        }
+                    }
+                    break;
+                case 'priority':
+                    if (todo && action.payload.priority) {
+                        todo.data.priority = action.payload.priority;
+                    }
+                    break;
+                case 'content':
+                    if (todo && action.payload.content) {
+                        todo.data.content = action.payload.content;
+                    }
+                    break;
+                case 'targetDate':
+                    if (todo && action.payload.targetDate !== undefined) {
+                        todo.data.targetDate = action.payload.targetDate;
+                    }
+            }
+        },
+
         deleteTag: (state, action: PayloadAction<DeleteTagPayload>) => {
             const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
             if (todo) {
                 todo.data.tags = todo.data.tags.filter((tag) => tag !== action.payload.tag);
                 if (todo.data.tags.length === 0) {
                     todo.data.tags.push('none');
-                }
-            }
-        },
-        switchTargetDate: (state, action: PayloadAction<SwitchTargetDate>) => {
-            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
-            if (todo) {
-                todo.data.targetDate = action.payload.targetDate;
-            }
-        },
-        switchPriority: (state, action: PayloadAction<SwitchPriority>) => {
-            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
-            if (todo) {
-                todo.data.priority = action.payload.priority;
-            }
-        },
-        switchContent: (state, action: PayloadAction<SwitchContent>) => {
-            const todo = state.todos.find((todo) => todo.data.id === action.payload.id);
-            const tags = action.payload.tags;
-            if (todo) {
-                todo.data.content = action.payload.content;
-                if (tags) {
-                    tags.map((tag) => todo.data.tags.push(tag));
-                    const newTags = todo.data.tags.filter((tag) => tag !== 'none');
-                    const sortedNewTags = newTags.sort((a, b) => a.localeCompare(b));
-                    if (sortedNewTags.length === 0) {
-                        sortedNewTags.push('none');
-                    }
-                    todo.data.tags = sortedNewTags;
                 }
             }
         },
@@ -165,13 +193,13 @@ const todoSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(deleteTodoFromFirebase.fulfilled, (state, action) => {
+            /*             .addCase(deleteTodoFromFirebase.fulfilled, (state, action) => {
                 const todoId = action.meta.arg;
 
                 state.todos = state.todos.filter((todo) => todo.data.id !== todoId && todo.data.parentId !== todoId);
 
                 state.loading = false;
-            })
+            }) */
             .addCase(deleteTodoFromFirebase.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
@@ -179,5 +207,5 @@ const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, toggleDoneStatus, switchPriority, switchContent, switchTargetDate, deleteTag, updateTodos } = todoSlice.actions;
+export const { addTodo, addSubTodo, deleteTag, updateTodos, updateTodo, updateSubTodo } = todoSlice.actions;
 export default todoSlice.reducer;

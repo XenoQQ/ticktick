@@ -1,19 +1,39 @@
 export interface TodoItemProps {
     key: string;
-    data: {
-        id: string;
-        content: string;
-        priority: 'none' | 'low' | 'medium' | 'high';
-        doneStatus: boolean;
-        tags: string[];
-        timeOfCreation: string;
-        timeOfCompletion?: string | null;
-        targetDate: string | null;
-        parentId: string | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any;
-    };
+    data: TodoItemData;
 }
+
+export interface TodoItemData {
+    id: string;
+    content: string;
+    priority: 'none' | 'low' | 'medium' | 'high';
+    doneStatus: boolean;
+    tags: string[];
+    timeOfCreation: string;
+    timeOfCompletion?: string | null;
+    targetDate: string | null;
+    children: TodoSubItemProps[];
+    isSub: boolean;
+}
+
+export interface TodoSubItemProps {
+    key: string;
+    data: TodoSubItemData;
+}
+
+export interface TodoSubItemData {
+    id: string;
+    parentId: string;
+    content: string;
+    priority: 'none' | 'low' | 'medium' | 'high';
+    doneStatus: boolean;
+    timeOfCreation: string;
+    timeOfCompletion?: string | null;
+    targetDate: string | null;
+    isSub: boolean;
+}
+
+export type groupKey = keyof TodoItemData | 'none';
 
 export interface PriorityMap {
     none: string;
@@ -47,6 +67,12 @@ export type VisibleCaseState = {
 };
 export type VisibleCase = 'optionsButtonClick' | 'groupButtonClick' | 'sortButtonClick';
 
+export interface Options {
+    groupOption: GroupCase;
+    sortOption: SortCase;
+    showTags: boolean;
+}
+
 export type GroupCase = 'date' | 'priority' | 'tag' | 'none';
 
 export type SortCase = 'date' | 'name' | 'tag' | 'priority' | 'createDate' | 'none';
@@ -57,27 +83,26 @@ export type TodosState = {
     error: string | null;
 };
 
-export type SwitchPriority = {
+export type UpdateTodoProps = {
+    updateType: 'doneStatus' | 'priority' | 'content' | 'targetDate';
     id: string;
-    priority: 'none' | 'low' | 'medium' | 'high';
-};
+} & Partial<{ priority: 'none' | 'low' | 'medium' | 'high'; content: string; tags: string[]; targetDate: string | null }>;
 
-export type SwitchContent = {
+export type UpdateSubTodoProps = {
+    updateType: 'doneStatus' | 'priority' | 'content' | 'targetDate';
+    parentId: string;
     id: string;
-    content: string;
-    tags: string[];
-};
-
-export type SwitchTargetDate = {
-    id: string;
-    targetDate: string | null;
-};
+} & Partial<{ priority: 'none' | 'low' | 'medium' | 'high'; content: string; targetDate: string | null }>;
 
 export interface Hashtags {
     tags: string[];
     loading: boolean;
     error: string | null;
 }
+
+export type GroupOfTodos = { key: string; title: string; items: TodoItemProps[] };
+
+export type GroupedTodos = GroupOfTodos[];
 
 ///// Theme
 

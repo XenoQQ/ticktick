@@ -3,8 +3,7 @@ import { styled, css } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { RootState, AppDispatch } from '../store/store';
-import { switchGroupCase, switchSortCase } from '../store/optionsSlice';
-import { switchShow } from '../store/showSlice';
+import { switchGroupCase, switchSortCase, switchShow } from '../store/optionsSlice';
 import { TitleMap, VisibleCase, VisibleCaseState, SortCase, GroupCase } from '../controls/types';
 
 import HashtagSettings from './hashtagsettings';
@@ -305,7 +304,7 @@ const TodoToolbar: React.FC = () => {
     const hashtagButtonRef = useRef<HTMLDivElement>(null);
     const hashtagsSettingsWrapperRef = useRef<HTMLDivElement>(null);
 
-    const showSub: boolean = useSelector((state: RootState) => state.showTags);
+    const showSub: boolean = useSelector((state: RootState) => state.options.showTags);
 
     const dispatch = useDispatch<AppDispatch>();
 
